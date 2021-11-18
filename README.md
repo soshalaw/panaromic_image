@@ -1,2 +1,2 @@
-# panaromic_image
+# src
 ROS workspace for panaromic image converter
