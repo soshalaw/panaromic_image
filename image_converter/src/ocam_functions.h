@@ -23,8 +23,8 @@ public:
     double c = 1;
     double d = 0;
     double e = 0;
-    double width = 768;
-    double length = 1024;
+    double width = 768*2;
+    double length = 1024*2;
 
     /*int get_ocam_model(struct ocam_model *myocam_model, char *filename)
     {

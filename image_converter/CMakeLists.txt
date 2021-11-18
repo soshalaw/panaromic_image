@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(image_converter)
 
- Compile as C++11, supported in ROS Kinetic and newer
- add_compile_options(-std=c++11)
+## Compile as C++11, supported in ROS Kinetic and newer
+# add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -123,7 +123,7 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(
 # include
-  ${catkin_INCLUDE_DIRS} 
+  ${catkin_INCLUDE_DIRS}
   opencv
 )
 
@@ -140,7 +140,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
- add_executable(${PROJECT_NAME}_node src/panaromic_image_node.cpp src/ocam_functions.h src/image_converter.h)
+ add_executable(panaromic_image_node src/panaromic_image_node.cpp src/ocam_functions.h src/image_converter.h)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -153,10 +153,9 @@ include_directories(
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
- target_link_libraries(${PROJECT_NAME}_node
-  ${PROJECT_NAME} 
-  ${OpenCV_LIBS}
-  ${catkin_LIBRARIES} 
+ target_link_libraries(panaromic_image_node
+   ${catkin_LIBRARIES}
+   ${OpenCV_LIBS}
  )
 
 #############

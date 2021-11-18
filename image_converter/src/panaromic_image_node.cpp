@@ -3,15 +3,14 @@
 #include <opencv2/core.hpp>
 #include <ros/ros.h>
 
-#include "ocam_functions.h"
+
 #include "image_converter.h"
 
 
-int main()
+int main(int argc, char** argv)
 {
     ros::init(argc, argv, "panaromic_image_node");
     bridge brdg;
-    brdg.show_image();
     ros::spin();
     return 0;
 }

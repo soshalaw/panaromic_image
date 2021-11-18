@@ -1,0 +1,59 @@
+#include <ros/ros.h>
+#include <image_transport/image_transport.h>
+#include <cv_bridge/cv_bridge.h>
+#include <sensor_msgs/image_encodings.h>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include "ocam_functions.h"
+
+static const std::string OPENCV_WINDOW = "Image window";
+
+class bridge
+{
+        ros::NodeHandle nh_;
+        image_transport::ImageTransport it_;
+        image_transport::Subscriber image_sub;
+
+public:
+
+        cv::Mat img;
+
+    bridge()
+    : it_(nh_)
+    {
+        image_sub = it_.subscribe("usb_cam/image_raw", 1 , &bridge::imageCb, this);
+        cv::namedWindow(OPENCV_WINDOW);
+    }
+
+    ~bridge()
+    {
+        cv::destroyWindow(OPENCV_WINDOW);
+    }
+
+    void imageCb(const sensor_msgs::ImageConstPtr& msg)  //function to convert data to cv::Mat
+    {
+        cv::Mat frame;
+        cv_bridge::CvImagePtr cv_ptr;
+        paranomic panaromic;
+
+        try
+        {
+            cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+        }
+        catch (cv_bridge::Exception& e)
+        {
+            ROS_ERROR("cv_bridge exceprion: %s",e.what());
+            return;
+        }
+
+        img = cv_ptr->image;
+
+        frame = panaromic.panaroma3(img);
+
+        cv::imshow(OPENCV_WINDOW,frame);
+
+        cv::waitKey(3);
+
+    }
+
+};

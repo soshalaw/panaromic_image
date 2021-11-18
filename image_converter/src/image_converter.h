@@ -32,7 +32,9 @@ public:
 
     void imageCb(const sensor_msgs::ImageConstPtr& msg)
     {
+        cv::Mat frame;
         cv_bridge::CvImagePtr cv_ptr;
+        paranomic panaromic;
 
         try
         {
@@ -45,20 +47,31 @@ public:
         }
 
         img = cv_ptr->image;
+
+        frame = panaromic.panaroma3(img);
+
+        cv::imshow(OPENCV_WINDOW,frame);
+
+        cv::waitKey(3);
+
     }
 
     void show_image()
     {
         cv::Mat frame, frame_new, frame_new1, frame_flipped;
 
+        paranomic panaromic;
+
         if(img.empty()){
-            break;
-            std::cout << "Frame empty" << std::endl;
+            ROS_ERROR("Frame empty");
+            return;
         }
 
         frame_new = panaromic.panaroma3(img);
 
-        cv::imshow("Frame",img);
+        cv::imshow(OPENCV_WINDOW,img);
+
+        ROS_INFO("Function called");
 
         cv::waitKey(3);
     }
