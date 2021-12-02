@@ -23,8 +23,8 @@ public:
     double c = 1;
     double d = 0;
     double e = 0;
-    double width = 768*2;
-    double length = 1024*2;
+    double width = 768;
+    double length = 1024*1.5;
 
     /*int get_ocam_model(struct ocam_model *myocam_model, char *filename)
     {
@@ -91,7 +91,7 @@ public:
 
 
     //------------------------------------------------------------------------------
-    void world2cam(double point2D[2], double point3D[3])
+    void world2cam(float point2D[2], float point3D[3])
     {
      double norm        = sqrt(point3D[0]*point3D[0] + point3D[1]*point3D[1]);
      double theta       = atan(point3D[2]/norm);
@@ -128,145 +128,63 @@ public:
 
     }
 
-    cv::Mat panaroma(cv::Mat M)
-    {
-
-        double alpha = CV_PI/3;
-        double gamma = 0;
-        double x, y, z;
-
-        int H_res = length;
-        int V_res = alpha*H_res/(2*CV_PI);
-
-        cv::Mat img, ImgPointsx, ImgPointsy;
-        double m[3];
-        img.create(V_res, H_res,M.type());
-        ImgPointsx.create(img.size(), CV_32FC1);
-        ImgPointsy.create(img.size(), CV_32FC1);
-
-        double points2D[2];
-
-
-        for(int j = 0; j < V_res; j++)
-        {
-            z = sin(gamma + j*alpha/V_res)/cos(j*alpha/V_res - alpha/2);
-
-            for(int i = 0; i < H_res; i++)
-            {
-                x = sin(2*CV_PI*i/H_res)*(cos(gamma + j*alpha/V_res)/cos(j*alpha/V_res - alpha/2));
-                y = cos(2*CV_PI*i/H_res)*(cos(gamma + j*alpha/V_res)/cos(j*alpha/V_res - alpha/2));
-
-                m[0] = x;
-                m[1] = y;
-                m[2] = z;
-
-                world2cam(points2D, m);
-
-                ImgPointsx.at<float>(j,i) = points2D[0];
-                ImgPointsy.at<float>(j,i) = points2D[1];
-            }
-
-        }
-
-        //std::cout << ImgPointsx <<std::endl;
-        cv::remap(M, img, ImgPointsx, ImgPointsy, 1);
-        return img;
-    }
 
     cv::Mat slice(cv::Mat M)
     {
-        double alpha = CV_PI/3;
-        double beta = CV_PI/2;
-        double gamma = 0;
-        double delta = CV_PI/4;
-        double x, y, z;
+        double theta_min = -CV_PI/4;
+        double theta_max = CV_PI/4;
+
+        double delta_min = CV_PI/4;
+        double delta_max = CV_PI/2;
+        float x, y, z, cos_alpha;
 
         int H_res = length/2;
-        int V_res = alpha*H_res/beta;
+        int V_res = (delta_max - delta_min)*H_res/(theta_max - theta_min);
 
         cv::Mat img, ImgPointsx, ImgPointsy;
-        double m[3];
+        float planer_coords[3];
+
         img.create(V_res, H_res,M.type());
         ImgPointsx.create(img.size(), CV_32FC1);
         ImgPointsy.create(img.size(), CV_32FC1);
 
-        double points2D[2];
+        float cp_x = cos(theta_min + (theta_max - theta_min)/2)*sin(delta_min + (delta_max - delta_min)/2);
+        float cp_y = -sin(theta_min + (theta_max - theta_min)/2)*sin(delta_min + (delta_max - delta_min)/2);
+        float cp_z = cos(delta_min + (delta_max - delta_min)/2);
+
+        float points2D[2];
 
 
-        for(int j = 0 ; j < V_res; j++)
+        for(int i = 0 ; i < V_res; i++)
         {
-            z = sin(gamma + j*alpha/V_res)/cos(j*alpha/V_res - alpha/2);
+            z = cos(delta_min + i*(delta_max - delta_min)/V_res);
 
-            for(int i = 0; i < H_res; i++)
+            for(int j = 0; j < H_res; j++)
             {
-                x = (sin(delta + i*beta/H_res)/cos(i*beta/H_res - beta/2))*(cos(gamma + j*alpha/V_res)/cos(j*alpha/V_res - alpha/2));
-                y = -(cos(delta + i*beta/H_res)/cos(i*beta/H_res - beta/2))*(cos(gamma + j*alpha/V_res)/cos(j*alpha/V_res - alpha/2));
+                x = cos(theta_min + (theta_max - theta_min)*j/H_res)*sin(delta_min + (delta_max - delta_min)*i/V_res);
+                y = -sin(theta_min + (theta_max - theta_min)*j/H_res)*sin(delta_min + (delta_max - delta_min)*i/V_res);
 
-                m[0] = x;
-                m[1] = y;
-                m[2] = z;
+                cos_alpha = cp_x*x + cp_y*y + cp_z*z;
 
-                world2cam(points2D, m);
+                planer_coords[0] = x/cos_alpha;
+                planer_coords[1] = y/cos_alpha;
+                planer_coords[2] = z/cos_alpha;
 
-                ImgPointsx.at<float>(j,i) = points2D[0];
-                ImgPointsy.at<float>(j,i) = points2D[1];
+                world2cam(points2D, planer_coords);
+
+                ImgPointsx.at<float>(i,j) = points2D[0];
+                ImgPointsy.at<float>(i,j) = points2D[1];
             }
 
         }
 
-        //std::cout << ImgPointsx <<std::endl;
         cv::remap(M, img, ImgPointsx, ImgPointsy, 1);
 
         return img;
     }
 
-    cv::Mat panaroma2(cv::Mat M)
-    {
 
-        double theta_min = CV_PI/6;
-        double theta_max = CV_PI/2;
-        double x, y, z;
-
-        int H_res = length;
-        double h_m = 1/tan(theta_min) - 1/tan(theta_max);
-        int V_res = h_m*H_res/(2*CV_PI);
-
-        cv::Mat img, ImgPointsx, ImgPointsy;
-        double m[3];
-        img.create(V_res, H_res,M.type());
-        ImgPointsx.create(img.size(), CV_32FC1);
-        ImgPointsy.create(img.size(), CV_32FC1);
-
-        double points2D[2];
-
-
-        for(int j = 0; j < V_res; j++)
-        {
-            z = 1/tan(theta_min) - j*h_m/V_res;;
-
-            for(int i = 0; i < H_res; i++)
-            {
-                x = cos(2*CV_PI*i/H_res);
-                y = -sin(2*CV_PI*i/H_res);
-
-                m[0] = x;
-                m[1] = y;
-                m[2] = z;
-
-                world2cam(points2D, m);
-
-                ImgPointsx.at<float>(j,i) = points2D[0];
-                ImgPointsy.at<float>(j,i) = points2D[1];
-            }
-
-        }
-
-        //std::cout << ImgPointsx <<std::endl;
-        cv::remap(M, img, ImgPointsx, ImgPointsy, 1);
-        return img;
-    }
-
-    cv::Mat panaroma3(cv::Mat M)
+    cv::Mat panaroma(cv::Mat M)
     {
 
         double theta_min = 0;
@@ -274,20 +192,20 @@ public:
 
         double delta_min = CV_PI/6;
         double delta_max = CV_PI/2;
-        double x, y, z;
+        float x, y, z;
 
         int H_res = length;
         double h_m = cos(delta_min) - cos(delta_max);
         int V_res = h_m*H_res/(theta_max - theta_min);
 
         cv::Mat img, ImgPointsx, ImgPointsy;
-        double m[3];
+        float cyl_coords[3];
 
         img.create(V_res, H_res,M.type());
         ImgPointsx.create(img.size(), CV_32FC1);
         ImgPointsy.create(img.size(), CV_32FC1);
 
-        double points2D[2];
+        float points2D[2];
 
 
         for(int i = 0; i < V_res; i++)
@@ -299,11 +217,11 @@ public:
                 x = cos(theta_min + (theta_max - theta_min)*j/H_res)*sin(delta_min + (delta_max - delta_min)*i/V_res);
                 y = -sin(theta_min + (theta_max - theta_min)*j/H_res)*sin(delta_min + (delta_max - delta_min)*i/V_res);
 
-                m[0] = x/sqrt(pow(x,2) + pow(y,2));
-                m[1] = y/sqrt(pow(x,2) + pow(y,2));
-                m[2] = z/sqrt(pow(x,2) + pow(y,2));
+                cyl_coords[0] = x/sqrt(pow(x,2) + pow(y,2));
+                cyl_coords[1] = y/sqrt(pow(x,2) + pow(y,2));
+                cyl_coords[2] = z/sqrt(pow(x,2) + pow(y,2));
 
-                world2cam(points2D, m);
+                world2cam(points2D, cyl_coords);
 
                 ImgPointsx.at<float>(i,j) = points2D[0];
                 ImgPointsy.at<float>(i,j) = points2D[1];
@@ -311,7 +229,6 @@ public:
 
         }
 
-        //std::cout << ImgPointsx <<std::endl;
         cv::remap(M, img, ImgPointsx, ImgPointsy, 1);
         return img;
     }

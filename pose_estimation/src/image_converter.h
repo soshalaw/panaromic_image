@@ -5,6 +5,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include "ocam_functions.h"
+#include "pose_estimate.h"
 
 static const std::string OPENCV_WINDOW = "Image window";
 
@@ -13,10 +14,11 @@ class bridge
         ros::NodeHandle nh_;
         image_transport::ImageTransport it_;
         image_transport::Subscriber image_sub;
+        arucoMarker estimate;
 
 public:
 
-        cv::Mat img;
+        cv::Mat img, new_image;
 
     bridge()
     : it_(nh_)
@@ -48,9 +50,11 @@ public:
 
         img = cv_ptr->image;
 
-        frame = panaromic.panaroma3(img);
+        frame = panaromic.slice(img);
 
-        cv::imshow(OPENCV_WINDOW,frame);
+        new_image = estimate.pose(frame);
+
+        cv::imshow(OPENCV_WINDOW,new_image);
 
         cv::waitKey(3);
 

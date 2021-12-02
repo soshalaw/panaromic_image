@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(image_converter)
+project(pose_estimation)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -9,12 +9,15 @@ project(image_converter)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   cv_bridge
+  geometry_msgs
   image_transport
   image_view
   roscpp
+  rospy
   sensor_msgs
   std_msgs
   usb_cam
+  tf
 )
 
 find_package(OpenCV REQUIRED)
@@ -76,7 +79,7 @@ find_package(OpenCV REQUIRED)
 ## Generate added messages and services with any dependencies listed here
 # generate_messages(
 #   DEPENDENCIES
-#   sensor_msgs#   std_msgs
+#   geometry_msgs#   sensor_msgs#   std_msgs
 # )
 
 ################################################
@@ -110,8 +113,8 @@ find_package(OpenCV REQUIRED)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES image_converter
-#  CATKIN_DEPENDS cv_bridge image_transport image_view roscpp sensor_msgs std_msgs usb_cam
+#  LIBRARIES pose_estimation
+#  CATKIN_DEPENDS cv_bridge geometry_msgs image_transport image_view roscpp rospy sensor_msgs std_msgs usb_cam
 #  DEPENDS system_lib
 )
 
@@ -129,7 +132,7 @@ include_directories(
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/image_converter.cpp
+#   src/${PROJECT_NAME}/pose_estimation.cpp
 # )
 
 ## Add cmake target dependencies of the library
@@ -140,7 +143,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
- add_executable(panaromic_image_node src/panaromic_image_node.cpp src/ocam_functions.h src/image_converter.h src/pose_estimate.h)
+ add_executable(pose_estimation_node src/pose_estimation_node.cpp src/ocam_functions.h src/image_converter.h src/pose_estimate.h)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -153,7 +156,7 @@ include_directories(
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
- target_link_libraries(panaromic_image_node
+ target_link_libraries(pose_estimation_node
    ${catkin_LIBRARIES}
    ${OpenCV_LIBS}
  )
@@ -205,7 +208,7 @@ include_directories(
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_image_converter.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_pose_estimation.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
