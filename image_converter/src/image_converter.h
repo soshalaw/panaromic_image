@@ -56,7 +56,7 @@ public:
 
         cv::imshow(OPENCV_WINDOW,new_image);
 
-        cv::waitKey(3);
+        cv::waitKey(1);
 
     }
 

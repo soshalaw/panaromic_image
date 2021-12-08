@@ -31,8 +31,6 @@ public:
         cv::Mat new_image;
         image.copyTo(new_image);
 
-
-
         std::vector<int> ids;
         std::vector<std::vector<cv::Point2f>> corners;
 
@@ -40,7 +38,12 @@ public:
 
         if (ids.size() > 0)
         {
+            std::cout << "marker detected" << std::endl;
             cv::aruco::drawDetectedMarkers(new_image, corners, ids);            
+        }
+        else
+        {
+            std::cout << "marker not detected" << std::endl;
         }
 
         return new_image;
