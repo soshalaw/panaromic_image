@@ -183,7 +183,7 @@ public:
         double alpha = theta_max - theta_min;
         double beta = CV_PI/2 - theta_max + alpha/2;
 
-        double delta_min = CV_PI/4;
+        double delta_min = CV_PI/6;
         double delta_max = CV_PI/2;
 
         double gamma = delta_max - delta_min;

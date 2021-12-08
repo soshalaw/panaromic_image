@@ -16,9 +16,11 @@ class bridge
         image_transport::Subscriber image_sub;
         arucoMarker estimate;
 
+
 public:
 
         cv::Mat img, new_image;
+        int l = 1;
 
     bridge()
     : it_(nh_)
@@ -56,7 +58,14 @@ public:
 
         cv::imshow(OPENCV_WINDOW,new_image);
 
-        cv::waitKey(1);
+        int k = cv::waitKey(1);
+
+        if (k%256 == 32)
+        {
+            std::string str = "/home/tue-me-minicar-laptop-02/internship/camera_calibration/data4/opencv_frame_" +std::to_string(l)+ ".png";
+            cv::imwrite(str,new_image);
+            l++;
+        }
 
     }
 
