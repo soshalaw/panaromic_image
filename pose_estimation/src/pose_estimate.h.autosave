@@ -72,32 +72,6 @@ public:
     {
         static tf::TransformBroadcaster br;
 
-        cv::Mat r_x = cv::Mat::eye(3, 3,  CV_64FC1);
-        cv::Mat r_y = cv::Mat::eye(3, 3,  CV_64FC1);
-        cv::Mat r_z = cv::Mat::eye(3, 3,  CV_64FC1);
-        cv::Mat rotation_matrix = cv::Mat::eye(3, 3,  CV_64FC1);
-        cv::Mat tvec_cam;
-
-
-        r_x.at<double>(1,1) = cos(rvecs[0]);
-        r_x.at<double>(1,2) = sin(rvecs[0]);
-        r_x.at<double>(2,1) = -sin(rvecs[0]);
-        r_x.at<double>(2,2) = cos(rvecs[0]);
-
-        r_y.at<double>(0,0) = cos(rvecs[1]);
-        r_y.at<double>(0,2) = -sin(rvecs[1]);
-        r_y.at<double>(2,0) = sin(rvecs[1]);
-        r_y.at<double>(2,2) = cos(rvecs[1]);
-
-        r_z.at<double>(0,0) = cos(rvecs[2]);
-        r_z.at<double>(0,1) = sin(rvecs[2]);
-        r_z.at<double>(1,0) = -sin(rvecs[2]);
-        r_z.at<double>(1,1) = cos(rvecs[2]);
-
-        rotation_matrix = r_x*r_y*r_z;
-
-        tvec_cam = rotation_matrix*cv::Mat(-tvecs);
-
         transform.setOrigin(tf::Vector3(tvecs[0], tvecs[1], tvecs[2]));
         q.setRPY(rvecs[0], rvecs[1], rvecs[2]);
         transform.setRotation(q);

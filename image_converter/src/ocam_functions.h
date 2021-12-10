@@ -25,7 +25,7 @@ public:
     double d = 0;
     double e = 0;
     double width = 768;
-    double length = 1024*1.5;
+    double length = 1024;
 
     /*int get_ocam_model(struct ocam_model *myocam_model, char *filename)
     {
@@ -217,7 +217,7 @@ public:
 
             for(int j = 0; j < H_res; j++)
             {
-                y_ = -tan(alpha/2) + j*2*tan(alpha/2)/H_res;
+                y_ = tan(alpha/2) - j*2*tan(alpha/2)/H_res;
 
                 x = p11*(x_*cos(theta) - y_*sin(theta)) + p12*(y_*cos(theta) + x_*sin(theta)) + cp_x;
                 y = p21*(x_*cos(theta) - y_*sin(theta)) + p22*(y_*cos(theta) + x_*sin(theta)) + cp_y;
@@ -285,7 +285,7 @@ public:
     private:
         cv::Mat img, ImgPointsx, ImgPointsy;  // definition of matrices for the output image and remapping
         double x, y, z, cos_alpha, x_, y_, z_;
-        int H_res = length/2; // length of the output image
+        int H_res = length; // length of the output image
 
         double planer_coords[3];
 

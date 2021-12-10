@@ -13,6 +13,7 @@
 class paranomic
 {
 public:
+
     paranomic() {
     }
 
@@ -91,7 +92,7 @@ public:
 
 
     //------------------------------------------------------------------------------
-    void world2cam(float point2D[2], float point3D[3])
+    void world2cam(double point2D[2], double point3D[3])
     {
      double norm        = sqrt(point3D[0]*point3D[0] + point3D[1]*point3D[1]);
      double theta       = atan(point3D[2]/norm);
@@ -128,32 +129,23 @@ public:
 
     }
 
-
-    cv::Mat slice(cv::Mat M)
+    cv::Mat slice_(cv::Mat M)
     {
         double theta_min = -CV_PI/4;
         double theta_max = CV_PI/4;
 
         double delta_min = CV_PI/4;
         double delta_max = CV_PI/2;
-        float x, y, z, cos_alpha;
 
-        int H_res = length/2;
         int V_res = (delta_max - delta_min)*H_res/(theta_max - theta_min);
-
-        cv::Mat img, ImgPointsx, ImgPointsy;
-        float planer_coords[3];
 
         img.create(V_res, H_res,M.type());
         ImgPointsx.create(img.size(), CV_32FC1);
         ImgPointsy.create(img.size(), CV_32FC1);
 
-        float cp_x = cos(theta_min + (theta_max - theta_min)/2)*sin(delta_min + (delta_max - delta_min)/2);
-        float cp_y = -sin(theta_min + (theta_max - theta_min)/2)*sin(delta_min + (delta_max - delta_min)/2);
-        float cp_z = cos(delta_min + (delta_max - delta_min)/2);
-
-        float points2D[2];
-
+        cp_x = cos(theta_min + (theta_max - theta_min)/2)*sin(delta_min + (delta_max - delta_min)/2);
+        cp_y = -sin(theta_min + (theta_max - theta_min)/2)*sin(delta_min + (delta_max - delta_min)/2);
+        cp_z = cos(delta_min + (delta_max - delta_min)/2);
 
         for(int i = 0 ; i < V_res; i++)
         {
@@ -183,6 +175,70 @@ public:
         return img;
     }
 
+    cv::Mat slice(cv::Mat M)
+    {
+        double theta_min = CV_PI/4;
+        double theta_max = CV_PI/2 + CV_PI/4;
+
+        double alpha = theta_max - theta_min;
+        double beta = CV_PI/2 - theta_max + alpha/2;
+
+        double delta_min = CV_PI/6;
+        double delta_max = CV_PI/2;
+
+        double gamma = delta_max - delta_min;
+        double sigma = delta_min + gamma/2;
+
+        double theta = 0;
+
+        int V_res = tan(gamma/2)*H_res/tan(alpha/2);     
+
+        img.create(V_res, H_res,M.type());
+        ImgPointsx.create(img.size(), CV_32FC1);
+        ImgPointsy.create(img.size(), CV_32FC1);
+
+        p11 = cos(beta)*cos(sigma);
+        p12 = -sin(beta);
+        p13 = cos(beta)*sin(sigma);
+        p21 = sin(beta)*cos(sigma);
+        p22 = cos(beta);
+        p23 = sin(beta)*sin(sigma);
+        p31 = -sin(sigma);
+        p32 = 0;
+        p33 = cos(sigma);
+
+        cp_x = sin(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
+        cp_y = cos(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
+        cp_z = cos(delta_min + (gamma)/2);
+
+        for(int i = 0 ; i < V_res; i++)
+        {
+            x_ = -tan(gamma/2) + i*2*tan(gamma/2)/V_res;
+
+            for(int j = 0; j < H_res; j++)
+            {
+                y_ = tan(alpha/2) - j*2*tan(alpha/2)/H_res;
+
+                x = p11*(x_*cos(theta) - y_*sin(theta)) + p12*(y_*cos(theta) + x_*sin(theta)) + cp_x;
+                y = p21*(x_*cos(theta) - y_*sin(theta)) + p22*(y_*cos(theta) + x_*sin(theta)) + cp_y;
+                z = p31*(x_*cos(theta) - y_*sin(theta)) + p32*(y_*cos(theta) + x_*sin(theta)) + cp_z;
+
+                planer_coords[0] = x/sqrt(pow(x,2) + pow(y,2) + pow(z,2));
+                planer_coords[1] = y/sqrt(pow(x,2) + pow(y,2) + pow(z,2));
+                planer_coords[2] = z/sqrt(pow(x,2) + pow(y,2) + pow(z,2));
+
+                world2cam(points2D, planer_coords);
+
+                ImgPointsx.at<float>(i,j) = points2D[0];
+                ImgPointsy.at<float>(i,j) = points2D[1];
+            }
+
+        }
+
+        cv::remap(M, img, ImgPointsx, ImgPointsy, 1);
+
+        return img;
+    }
 
     cv::Mat panaroma(cv::Mat M)
     {
@@ -192,21 +248,14 @@ public:
 
         double delta_min = CV_PI/6;
         double delta_max = CV_PI/2;
-        float x, y, z;
+        double x, y, z;
 
-        int H_res = length;
         double h_m = cos(delta_min) - cos(delta_max);
         int V_res = h_m*H_res/(theta_max - theta_min);
-
-        cv::Mat img, ImgPointsx, ImgPointsy;
-        float cyl_coords[3];
 
         img.create(V_res, H_res,M.type());
         ImgPointsx.create(img.size(), CV_32FC1);
         ImgPointsy.create(img.size(), CV_32FC1);
-
-        float points2D[2];
-
 
         for(int i = 0; i < V_res; i++)
         {
@@ -223,8 +272,8 @@ public:
 
                 world2cam(points2D, cyl_coords);
 
-                ImgPointsx.at<float>(i,j) = points2D[0];
-                ImgPointsy.at<float>(i,j) = points2D[1];
+                ImgPointsx.at<double>(i,j) = points2D[0];
+                ImgPointsy.at<double>(i,j) = points2D[1];
             }
 
         }
@@ -232,6 +281,21 @@ public:
         cv::remap(M, img, ImgPointsx, ImgPointsy, 1);
         return img;
     }
+
+    private:
+        cv::Mat img, ImgPointsx, ImgPointsy;  // definition of matrices for the output image and remapping
+        double x, y, z, cos_alpha, x_, y_, z_;
+        int H_res = length/2; // length of the output image
+
+        double planer_coords[3];
+
+        double cyl_coords[3];
+
+        double points2D[2];
+
+        double p11, p12, p13, p21, p22, p23, p31, p32, p33;
+
+        double cp_x, cp_y, cp_z;
 
 };
 //------------------------------------------------------------------------------
