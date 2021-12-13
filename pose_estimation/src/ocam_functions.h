@@ -129,65 +129,17 @@ public:
 
     }
 
-    cv::Mat slice_(cv::Mat M)
-    {
-        double theta_min = -CV_PI/4;
-        double theta_max = CV_PI/4;
-
-        double delta_min = CV_PI/4;
-        double delta_max = CV_PI/2;
-
-        int V_res = (delta_max - delta_min)*H_res/(theta_max - theta_min);
-
-        img.create(V_res, H_res,M.type());
-        ImgPointsx.create(img.size(), CV_32FC1);
-        ImgPointsy.create(img.size(), CV_32FC1);
-
-        cp_x = cos(theta_min + (theta_max - theta_min)/2)*sin(delta_min + (delta_max - delta_min)/2);
-        cp_y = -sin(theta_min + (theta_max - theta_min)/2)*sin(delta_min + (delta_max - delta_min)/2);
-        cp_z = cos(delta_min + (delta_max - delta_min)/2);
-
-        for(int i = 0 ; i < V_res; i++)
-        {
-            z = cos(delta_min + i*(delta_max - delta_min)/V_res);
-
-            for(int j = 0; j < H_res; j++)
-            {
-                x = cos(theta_min + (theta_max - theta_min)*j/H_res)*sin(delta_min + (delta_max - delta_min)*i/V_res);
-                y = -sin(theta_min + (theta_max - theta_min)*j/H_res)*sin(delta_min + (delta_max - delta_min)*i/V_res);
-
-                cos_alpha = cp_x*x + cp_y*y + cp_z*z;
-
-                planer_coords[0] = x/cos_alpha;
-                planer_coords[1] = y/cos_alpha;
-                planer_coords[2] = z/cos_alpha;
-
-                world2cam(points2D, planer_coords);
-
-                ImgPointsx.at<float>(i,j) = points2D[0];
-                ImgPointsy.at<float>(i,j) = points2D[1];
-            }
-
-        }
-
-        cv::remap(M, img, ImgPointsx, ImgPointsy, 1);
-
-        return img;
-    }
-
     cv::Mat slice(cv::Mat M)
     {
         double theta_min = CV_PI/4;
         double theta_max = CV_PI/2 + CV_PI/4;
 
         double alpha = theta_max - theta_min;
-        double beta = CV_PI/2 - theta_max + alpha/2;
 
         double delta_min = CV_PI/6;
         double delta_max = CV_PI/2;
 
         double gamma = delta_max - delta_min;
-        double sigma = delta_min + gamma/2;
 
         double theta = 0;
 
@@ -197,31 +149,21 @@ public:
         ImgPointsx.create(img.size(), CV_32FC1);
         ImgPointsy.create(img.size(), CV_32FC1);
 
-        p11 = cos(beta)*cos(sigma);
-        p12 = -sin(beta);
-        p13 = cos(beta)*sin(sigma);
-        p21 = sin(beta)*cos(sigma);
-        p22 = cos(beta);
-        p23 = sin(beta)*sin(sigma);
-        p31 = -sin(sigma);
-        p32 = 0;
-        p33 = cos(sigma);
-
         cp_x = sin(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
         cp_y = cos(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
         cp_z = cos(delta_min + (gamma)/2);
 
         for(int i = 0 ; i < V_res; i++)
         {
-            x_ = -tan(gamma/2) + i*2*tan(gamma/2)/V_res;
+            y_ = tan(gamma/2) - i*2*tan(gamma/2)/V_res;
 
             for(int j = 0; j < H_res; j++)
             {
-                y_ = tan(alpha/2) - j*2*tan(alpha/2)/H_res;
+                x_ = tan(alpha/2) - j*2*tan(alpha/2)/H_res;
 
-                x = p11*(x_*cos(theta) - y_*sin(theta)) + p12*(y_*cos(theta) + x_*sin(theta)) + cp_x;
-                y = p21*(x_*cos(theta) - y_*sin(theta)) + p22*(y_*cos(theta) + x_*sin(theta)) + cp_y;
-                z = p31*(x_*cos(theta) - y_*sin(theta)) + p32*(y_*cos(theta) + x_*sin(theta)) + cp_z;
+                x = -cp_y*x_ - cp_x*z_c*y_ + cp_x;
+                y = cp_x*x_ - cp_y*cp_z*y_ + cp_y;
+                z = -(cp_y*cp_y - cp_x*cp_x)*y_ + cp_z;
 
                 planer_coords[0] = x/sqrt(pow(x,2) + pow(y,2) + pow(z,2));
                 planer_coords[1] = y/sqrt(pow(x,2) + pow(y,2) + pow(z,2));
