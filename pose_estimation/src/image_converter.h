@@ -19,6 +19,7 @@ class bridge
 public:
 
         cv::Mat img, new_image;
+        double c[3];
 
     bridge()
     : it_(nh_)
@@ -50,9 +51,9 @@ public:
 
         img = cv_ptr->image;
 
-        frame = panaromic.slice(img);
+        frame = panaromic.slice(img, c);
 
-        new_image = estimate.pose(frame);
+        new_image = estimate.pose(frame, c);
 
         cv::imshow(OPENCV_WINDOW,new_image);
 

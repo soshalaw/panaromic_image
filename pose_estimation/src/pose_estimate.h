@@ -13,7 +13,7 @@ class arucoMarker
 public:
 
     cv::Mat camera_matrix = cv::Mat::eye(3, 3, CV_64FC1);
-    cv::Mat distcoefs = (cv::Mat_<double>(5 , 1) << -1.32802856e-01, -3.02795796e+1, 1.19753409e-01, 1.19284710e-01, 3.76373075e+02);
+    cv::Mat distcoefs = (cv::Mat_<double>(5 , 1) << -0.09252277, 0.17653478, -0.01388358, 0.00633439, -0.11124765);
     cv::Ptr<cv::aruco::Dictionary> Dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
 
     ros::NodeHandle nh;
@@ -23,27 +23,31 @@ public:
 
 
     tf::Transform transform;
+    tf::Transform transform2;
     tf::Quaternion q;
 
     arucoMarker()
     {
-        camera_matrix.at<double>(0,0) = 2.61091273e+03;
-        camera_matrix.at<double>(0,2) = 5.06812801e+02;
-        camera_matrix.at<double>(1,1) = 1.76595876e+03;
-        camera_matrix.at<double>(1,2) = 3.63574526e+02;
+        //resolution 512
+        /*camera_matrix.at<double>(0,0) = 283.430152308643;
+        camera_matrix.at<double>(0,2) = 261.212883329824;
+        camera_matrix.at<double>(1,1) = 282.882284500171;
+        camera_matrix.at<double>(1,2) = 147.952673195220;*/
+
+        //resolution 1024
+        camera_matrix.at<double>(0,0) = 590.619400577650;
+        camera_matrix.at<double>(0,2) = 519.693135481507;
+        camera_matrix.at<double>(1,1) = 598.235920789867;
+        camera_matrix.at<double>(1,2) = 285.442343211893;
 
         pub = nh.advertise<geometry_msgs::Pose>("pose",5);
-
-
     }
 
 
-    cv::Mat pose(cv::Mat image)
+    cv::Mat pose(cv::Mat image, double c[3])
     {
         cv::Mat new_image;
         image.copyTo(new_image);
-
-
 
         std::vector<int> ids;
         std::vector<std::vector<cv::Point2f>> corners;
@@ -59,8 +63,7 @@ public:
             for (int i = 0; i < ids.size(); i++ )
             {
                 cv::aruco::drawAxis(new_image, camera_matrix, distcoefs, rvecs[i], tvecs[i], 0.1); //0.1 length of the drawn axis
-                broadcast(rvecs[i], tvecs[i]);
-
+                broadcast(rvecs[i], tvecs[i], c);
             }
 
         }
@@ -68,15 +71,41 @@ public:
         return new_image;
     }
 
-    void broadcast(cv::Vec3d rvecs, cv::Vec3d tvecs)
+    void broadcast(cv::Vec3d rvecs, cv::Vec3d tvecs, double c[3])
     {
+        
+        double cp_x = c[0];
+        double cp_y = c[1];
+        double cp_z = c[2];
+        
         static tf::TransformBroadcaster br;
 
         transform.setOrigin(tf::Vector3(tvecs[0], tvecs[1], tvecs[2]));
         q.setRPY(rvecs[0], rvecs[1], rvecs[2]);
         transform.setRotation(q);
+        
+        double x_ = transform.inverse().getOrigin().x();
+        double y_ = transform.inverse().getOrigin().y();
+        double z_ = transform.inverse().getOrigin().z();
 
-        br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "Marker", "Camera"));
+        double x_tr = -cp_y*x_ - cp_x*cp_z*y_ + cp_x;
+        double y_tr = cp_x*x_ - cp_y*cp_z*y_ + cp_y;
+        double z_tr = -(-cp_y*cp_y - cp_x*cp_x)*y_ + cp_z;
+
+        double mod = sqrt(x_tr*x_tr + y_tr*y_tr + z_tr*z_tr);
+
+        double x = x_tr/mod;
+        double y = y_tr/mod;
+        double z = z_tr/mod;
+        
+        double p_x = x*z_;
+        double p_y = y*z_;
+        double p_z = z*z_;
+
+        transform2.setOrigin(tf::Vector3(p_x, p_y, p_z));
+        transform2.setRotation(transform.inverse().getRotation());
+
+        br.sendTransform(tf::StampedTransform(transform2, ros::Time::now(), "fisheyed_camera", "fisheyed_marker_pred"));
 
     }
 

@@ -25,7 +25,7 @@ public:
     double d = 0;
     double e = 0;
     double width = 768;
-    double length = 1024*1.5;
+    double length = 1024;
 
     /*int get_ocam_model(struct ocam_model *myocam_model, char *filename)
     {
@@ -129,7 +129,7 @@ public:
 
     }
 
-    cv::Mat slice(cv::Mat M)
+    cv::Mat slice(cv::Mat M, double c[3])
     {
         double theta_min = CV_PI/4;
         double theta_max = CV_PI/2 + CV_PI/4;
@@ -149,9 +149,10 @@ public:
         ImgPointsx.create(img.size(), CV_32FC1);
         ImgPointsy.create(img.size(), CV_32FC1);
 
-        cp_x = sin(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
-        cp_y = cos(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
-        cp_z = cos(delta_min + (gamma)/2);
+        c[0] = cp_x = sin(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
+        c[1] = cp_y = cos(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
+        c[2] = cp_z = cos(delta_min + (gamma)/2);
+
 
         for(int i = 0 ; i < V_res; i++)
         {
@@ -161,9 +162,9 @@ public:
             {
                 x_ = tan(alpha/2) - j*2*tan(alpha/2)/H_res;
 
-                x = -cp_y*x_ - cp_x*z_c*y_ + cp_x;
+                x = -cp_y*x_ - cp_x*cp_z*y_ + cp_x;
                 y = cp_x*x_ - cp_y*cp_z*y_ + cp_y;
-                z = -(cp_y*cp_y - cp_x*cp_x)*y_ + cp_z;
+                z = -(-cp_y*cp_y - cp_x*cp_x)*y_ + cp_z;
 
                 planer_coords[0] = x/sqrt(pow(x,2) + pow(y,2) + pow(z,2));
                 planer_coords[1] = y/sqrt(pow(x,2) + pow(y,2) + pow(z,2));
@@ -227,15 +228,13 @@ public:
     private:
         cv::Mat img, ImgPointsx, ImgPointsy;  // definition of matrices for the output image and remapping
         double x, y, z, cos_alpha, x_, y_, z_;
-        int H_res = length/2; // length of the output image
+        int H_res = length; // length of the output image
 
         double planer_coords[3];
 
         double cyl_coords[3];
 
         double points2D[2];
-
-        double p11, p12, p13, p21, p22, p23, p31, p32, p33;
 
         double cp_x, cp_y, cp_z;
 
