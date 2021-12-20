@@ -53,30 +53,38 @@ public:
     {
         cv::Mat new_image, gray_img;
         image.copyTo(new_image);
-        //cv::cvtColor(new_image, gray_img, cv::COLOR_BGR2GRAY);
+        cv::cvtColor(new_image, gray_img, cv::COLOR_BGR2GRAY);
+        cv::Ptr<cv::aruco::Board> board = cv::aruco::Board::create(Dictionary);
 
         std::vector<int> ids;
         std::vector<std::vector<cv::Point2f>> corners;
 
-        cv::GaussianBlur(new_image, gray_img, cv::Size(blur_window_size, blur_window_size), 0, 0);
+        //cv::GaussianBlur(gray_img, gray_img, cv::Size(blur_window_size, blur_window_size), 0, 0);
 
+        cv::aruco::detectMarkers(inputImage, board.dictionary, markerCorners, markerIds);
         cv::aruco::detectMarkers(gray_img, Dictionary, corners, ids );
+
+        if(ids.size() > 0) {
+            cv::Vec3d rvec, tvec;
+            int valid = cv::aruco::estimatePoseBoard(corners, ids, board, camera_matrix, distcoefs, rvec, tvec);
+        }
+
 
         if (ids.size() > 0)
         {
-            cv::aruco::drawDetectedMarkers(gray_img, corners, ids);
+            cv::aruco::drawDetectedMarkers(new_image, corners, ids);
             std::vector<cv::Vec3d> rvecs, tvecs;
-            cv::aruco::estimatePoseSingleMarkers(corners, 0.1, camera_matrix, distcoefs, rvecs, tvecs); //0.1 length of the markers to be detected
+            cv::aruco::estimatePoseSingleMarkers(corners, 0.2, camera_matrix, distcoefs, rvecs, tvecs); //0.1 length of the markers to be detected
 
             for (int i = 0; i < ids.size(); i++ )
             {
-                cv::aruco::drawAxis(gray_img, camera_matrix, distcoefs, rvecs[i], tvecs[i], 0.1); //0.1 length of the drawn axis
+                cv::aruco::drawAxis(new_image, camera_matrix, distcoefs, rvecs[i], tvecs[i], 0.1); //0.1 length of the drawn axis
                 broadcast(rvecs[i], tvecs[i], c);
             }
 
         }
 
-        return gray_img;
+        return new_image;
     }
 
     void broadcast(cv::Vec3d rvecs, cv::Vec3d tvecs, double c[3])
@@ -96,15 +104,19 @@ public:
         double y_ = transform.inverse().getOrigin().y();
         double z_ = transform.inverse().getOrigin().z();
 
-        double x_tr = -cp_y*x_ - cp_x*cp_z*y_ + cp_x;
-        double y_tr = cp_x*x_ - cp_y*cp_z*y_ + cp_y;
-        double z_tr = -(-cp_y*cp_y - cp_x*cp_x)*y_ + cp_z;
+        double x_tr = -cp_y*x_ - cp_x*cp_z*y_ + cp_x*z_;
+        double y_tr = cp_x*x_ - cp_y*cp_z*y_ + cp_y*z_;
+        double z_tr = -(-cp_y*cp_y - cp_x*cp_x)*y_ + cp_z*z_;
 
-        double mod = sqrt(x_tr*x_tr + y_tr*y_tr + z_tr*z_tr);
+        double x_pr = x_tr/z_tr;
+        double y_pr = y_tr/z_tr;
+        double z_pr = 1;
 
-        double x = x_tr/mod;
-        double y = y_tr/mod;
-        double z = z_tr/mod;
+        double mod = sqrt(x_pr*x_pr + y_pr*y_pr + z_pr*z_pr);
+
+        double x = x_pr/mod;
+        double y = y_pr/mod;
+        double z = z_pr/mod;
         
         double p_x = x*z_;
         double p_y = y*z_;
