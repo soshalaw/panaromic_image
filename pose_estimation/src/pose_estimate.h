@@ -26,19 +26,24 @@ public:
     tf::Transform transform2;
     tf::Quaternion q;
 
+    int blur_window_size;
+
     arucoMarker()
     {
         //resolution 512
-        /*camera_matrix.at<double>(0,0) = 283.430152308643;
+        camera_matrix.at<double>(0,0) = 283.430152308643;
         camera_matrix.at<double>(0,2) = 261.212883329824;
         camera_matrix.at<double>(1,1) = 282.882284500171;
-        camera_matrix.at<double>(1,2) = 147.952673195220;*/
+        camera_matrix.at<double>(1,2) = 147.952673195220;
 
         //resolution 1024
-        camera_matrix.at<double>(0,0) = 590.619400577650;
+        /*camera_matrix.at<double>(0,0) = 590.619400577650;
         camera_matrix.at<double>(0,2) = 519.693135481507;
         camera_matrix.at<double>(1,1) = 598.235920789867;
-        camera_matrix.at<double>(1,2) = 285.442343211893;
+        camera_matrix.at<double>(1,2) = 285.442343211893;*/
+
+
+        blur_window_size = 7;
 
         pub = nh.advertise<geometry_msgs::Pose>("pose",5);
     }
@@ -46,29 +51,32 @@ public:
 
     cv::Mat pose(cv::Mat image, double c[3])
     {
-        cv::Mat new_image;
+        cv::Mat new_image, gray_img;
         image.copyTo(new_image);
+        //cv::cvtColor(new_image, gray_img, cv::COLOR_BGR2GRAY);
 
         std::vector<int> ids;
         std::vector<std::vector<cv::Point2f>> corners;
 
-        cv::aruco::detectMarkers(new_image, Dictionary, corners, ids );
+        cv::GaussianBlur(new_image, gray_img, cv::Size(blur_window_size, blur_window_size), 0, 0);
+
+        cv::aruco::detectMarkers(gray_img, Dictionary, corners, ids );
 
         if (ids.size() > 0)
         {
-            cv::aruco::drawDetectedMarkers(new_image, corners, ids);
+            cv::aruco::drawDetectedMarkers(gray_img, corners, ids);
             std::vector<cv::Vec3d> rvecs, tvecs;
             cv::aruco::estimatePoseSingleMarkers(corners, 0.1, camera_matrix, distcoefs, rvecs, tvecs); //0.1 length of the markers to be detected
 
             for (int i = 0; i < ids.size(); i++ )
             {
-                cv::aruco::drawAxis(new_image, camera_matrix, distcoefs, rvecs[i], tvecs[i], 0.1); //0.1 length of the drawn axis
+                cv::aruco::drawAxis(gray_img, camera_matrix, distcoefs, rvecs[i], tvecs[i], 0.1); //0.1 length of the drawn axis
                 broadcast(rvecs[i], tvecs[i], c);
             }
 
         }
 
-        return new_image;
+        return gray_img;
     }
 
     void broadcast(cv::Vec3d rvecs, cv::Vec3d tvecs, double c[3])
@@ -101,6 +109,7 @@ public:
         double p_x = x*z_;
         double p_y = y*z_;
         double p_z = z*z_;
+
 
         transform2.setOrigin(tf::Vector3(p_x, p_y, p_z));
         transform2.setRotation(transform.inverse().getRotation());

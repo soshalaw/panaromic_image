@@ -228,7 +228,7 @@ public:
     private:
         cv::Mat img, ImgPointsx, ImgPointsy;  // definition of matrices for the output image and remapping
         double x, y, z, cos_alpha, x_, y_, z_;
-        int H_res = length; // length of the output image
+        int H_res = length/2; // length of the output image
 
         double planer_coords[3];
 
