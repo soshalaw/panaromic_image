@@ -53,7 +53,8 @@ public:
 
         frame = panaromic.slice(img, c);
 
-        new_image = estimate.pose(frame, c);
+        //new_image = estimate.pose_marker(frame, c);
+        new_image = estimate.pose_board(frame, c);
 
         cv::imshow(OPENCV_WINDOW,new_image);
 
