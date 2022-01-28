@@ -20,6 +20,7 @@ public:
 
         cv::Mat img, new_image;
         double c[3];
+        int img_counter = 1;
 
     bridge()
     : it_(nh_)
@@ -53,12 +54,19 @@ public:
 
         frame = panaromic.slice(img, c);
 
-        //new_image = estimate.pose_marker(frame, c);
-        new_image = estimate.pose_board(frame, c);
+        new_image = estimate.pose_marker(frame, c);
+        //new_image = estimate.pose_board(frame, c);
 
         cv::imshow(OPENCV_WINDOW,new_image);
 
-        cv::waitKey(3);
+        int k = cv::waitKey(1);
+
+        if (k%256 == 32)
+        {
+            std::string name = "/home/tue-me-minicar-laptop-02/internship/camera_calibration/camera_01/data11_512p_90_45/open_cv_img" + std::to_string(img_counter) + ".png" ;
+            cv::imwrite(name, new_image);
+            img_counter++;
+        }
 
     }
 

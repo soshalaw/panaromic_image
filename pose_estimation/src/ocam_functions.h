@@ -17,16 +17,6 @@ public:
     paranomic() {
     }
 
-    double invpol[6] = {-48.7332773169590,232.972008795315,-390.397549899376,214.983251794334,-308.310044095912,513.809204056670};
-    double pol[5] = {382.404319709623,0,-0.00113703769137079,1.18804593219259e-06,-3.83168603418075e-09};
-    double yc = 404.531114757043;
-    double xc = 519.031000184018;
-    double c = 1;
-    double d = 0;
-    double e = 0;
-    double width = 768;
-    double length = 1024;
-
     /*int get_ocam_model(struct ocam_model *myocam_model, char *filename)
     {
      double *pol        = myocam_model->pol;
@@ -227,16 +217,22 @@ public:
 
     private:
         cv::Mat img, ImgPointsx, ImgPointsy;  // definition of matrices for the output image and remapping
+
         double x, y, z, cos_alpha, x_, y_, z_;
-        int H_res = length/2; // length of the output image
-
         double planer_coords[3];
-
         double cyl_coords[3];
-
         double points2D[2];
-
-        double cp_x, cp_y, cp_z;
+        double cp_x, cp_y, cp_z;       
+        double invpol[6] = {-48.7332773169590,232.972008795315,-390.397549899376,214.983251794334,-308.310044095912,513.809204056670};
+        double pol[5] = {382.404319709623,0,-0.00113703769137079,1.18804593219259e-06,-3.83168603418075e-09};
+        double yc = 404.531114757043;
+        double xc = 519.031000184018;
+        double c = 1;
+        double d = 0;
+        double e = 0;
+        double width = 768;
+        double length = 1024;
+        int H_res = length/2; // length of the output image
 
 };
 //------------------------------------------------------------------------------
