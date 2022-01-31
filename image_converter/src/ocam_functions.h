@@ -169,9 +169,13 @@ public:
             {
                 x_ = tan(alpha/2) - j*2*tan(alpha/2)/H_res;
 
-                x = -cp_y*x_ - cp_x*cp_z*y_ + cp_x;
+                /*x = -cp_y*x_ - cp_x*cp_z*y_ + cp_x;
                 y = cp_x*x_ - cp_y*cp_z*y_ + cp_y;
-                z = -(-cp_y*cp_y - cp_x*cp_x)*y_ + cp_z;
+                z = -(-cp_y*cp_y - cp_x*cp_x)*y_ + cp_z;*/
+
+                x = cp_y*x_ + cp_x*cp_z*y_ + cp_x;
+                y = -cp_x*x_ + cp_y*cp_z*y_ + cp_y;
+                z = -(cp_y*cp_y + cp_x*cp_x)*y_ + cp_z;
 
                 planer_coords[0] = x/sqrt(x*x + y*y + z*z);
                 planer_coords[1] = y/sqrt(x*x + y*y + z*z);
