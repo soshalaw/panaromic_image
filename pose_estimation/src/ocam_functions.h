@@ -126,7 +126,7 @@ public:
 
         double alpha = theta_max - theta_min;
 
-        double delta_min = CV_PI/3;
+        double delta_min = CV_PI/4;
         double delta_max = CV_PI/2;
 
         double gamma = delta_max - delta_min;
@@ -237,7 +237,7 @@ public:
         double e = 0;
         double width = 768;
         double length = 1024;
-        int H_res = length/2; // length of the output image
+        int H_res = length/4; // length of the output image
 
 };
 //------------------------------------------------------------------------------

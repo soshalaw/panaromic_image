@@ -18,7 +18,7 @@ class bridge
 
 public:
 
-        cv::Mat img, new_image;
+        cv::Mat img, new_image, resized_image;
         int l = 1;
         double c[3];
         
@@ -56,13 +56,18 @@ public:
 
         new_image = estimate.pose(frame);
 
-        cv::imshow(OPENCV_WINDOW,new_image);
+        double width = new_image.size().width;
+        double height = new_image.size().height;
+
+        cv::resize(new_image, resized_image, cv::Size(width*3, height*3));
+
+        cv::imshow(OPENCV_WINDOW,resized_image);
 
         int k = cv::waitKey(1);
 
         if (k%256 == 32)
         {
-            std::string str = "/home/soshala/internship/camera_calibration/camera_01/data5/opencv_frame_" +std::to_string(l)+ ".png";
+            std::string str = "/home/soshala/internship/camera_calibration/camera_01/data6/opencv_frame_" +std::to_string(l)+ ".png";
             cv::imwrite(str,new_image);
             l++;
         }
