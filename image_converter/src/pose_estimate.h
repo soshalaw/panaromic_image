@@ -38,12 +38,14 @@ public:
             //cv::aruco::drawDetectedMarkers(new_image, corners, ids);
         }
 
-        return new_image;
+        cv::flip(new_image, flipedimage, 0);
+
+        return flipedimage;
     }
 
 private:
 
-    cv::Mat new_image;
+    cv::Mat new_image, flipedimage;
     std::vector<int> ids;
     std::vector<std::vector<cv::Point2f>> corners, rejected_corners;
     cv::Ptr<cv::aruco::DetectorParameters> parameters = cv::aruco::DetectorParameters::create();

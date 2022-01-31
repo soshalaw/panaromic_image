@@ -33,7 +33,7 @@ public:
     double d = 0;
     double e = 0;
     double width = 768;
-    double length = 1024;
+    double length = 1024*1.5;
 
     /*int get_ocam_model(struct ocam_model *myocam_model, char *filename)
     {
@@ -139,8 +139,8 @@ public:
 
     cv::Mat slice(cv::Mat M)
     {
-        double theta_min = CV_PI/4;
-        double theta_max = CV_PI/2 + CV_PI/4;
+        double theta_min = CV_PI/3;
+        double theta_max = CV_PI/3 + CV_PI/3;
 
         double alpha = theta_max - theta_min;
 

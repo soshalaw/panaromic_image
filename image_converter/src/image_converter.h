@@ -62,7 +62,7 @@ public:
 
         if (k%256 == 32)
         {
-            std::string str = "/home/tue-me-minicar-laptop-02/internship/camera_calibration/camera_01/data5/opencv_frame_" +std::to_string(l)+ ".png";
+            std::string str = "/home/soshala/internship/camera_calibration/camera_01/data5/opencv_frame_" +std::to_string(l)+ ".png";
             cv::imwrite(str,new_image);
             l++;
         }
