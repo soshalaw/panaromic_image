@@ -69,7 +69,7 @@ public:
         {
             cv::aruco::drawDetectedMarkers(new_image, corners, ids);
             std::vector<cv::Vec3d> rvecs, tvecs;
-            cv::aruco::estimatePoseSingleMarkers(corners, 0.2, camera_matrix, distcoefs, rvecs, tvecs); //0.1 length of the markers to be detected
+            cv::aruco::estimatePoseSingleMarkers(corners, 0.1, camera_matrix, distcoefs, rvecs, tvecs); //0.1 length of the markers to be detected
 
             for (int i = 0; i < ids.size(); i++ )
             {
@@ -147,9 +147,9 @@ public:
         x_pr = x_/z_;
         y_pr = y_/z_;
 
-        x_tr = -cp_y*x_pr - cp_x*cp_z*y_pr + cp_x;
-        y_tr = cp_x*x_pr - cp_y*cp_z*y_pr + cp_y;
-        z_tr = (cp_y*cp_y + cp_x*cp_x)*y_ + cp_z;
+        x_tr = cp_y*x_pr + cp_x*cp_z*y_pr + cp_x;
+        y_tr = -cp_x*x_pr + cp_y*cp_z*y_pr + cp_y;
+        z_tr = -(cp_y*cp_y + cp_x*cp_x)*y_ + cp_z;
 
         mod = sqrt(x_tr*x_tr + y_tr*y_tr + z_tr*z_tr);
 
@@ -181,7 +181,7 @@ public:
             abs_dist = sqrt((abs_x*abs_x + abs_y*abs_y + abs_z*abs_z));
 
             error = abs(abs_dist - est_dist);
-            accuracy = (error/abs_dist)*100;
+            accuracy = (est_dist/abs_dist)*100;
 
            ROS_INFO_STREAM("Error: "<< error << " Accuracy: " << accuracy << " Absolute_dist :" << abs_dist);
         }

@@ -63,7 +63,7 @@ public:
 
         if (k%256 == 32)
         {
-            std::string name = "/home/tue-me-minicar-laptop-02/internship/camera_calibration/camera_01/data11_512p_90_45/open_cv_img" + std::to_string(img_counter) + ".png" ;
+            std::string name = "/home/tue-me-minicar-laptop-02/internship/camera_calibration/camera_02/data4_512p_90_60/open_cv_img" + std::to_string(img_counter) + ".png" ;
             cv::imwrite(name, new_image);
             img_counter++;
         }
