@@ -18,10 +18,10 @@ public:
     }
 
     //data for camera 01
-    double invpol[6] = {-48.7332773169590,232.972008795315,-390.397549899376,214.983251794334,-308.310044095912,513.809204056670};
-    double pol[5] = {382.404319709623,0,-0.00113703769137079,1.18804593219259e-06,-3.83168603418075e-09};
-    double yc = 404.531114757043;
-    double xc = 519.031000184018;
+    double invpol[6] = {-1.075233654325322e+02, 4.704007234612547e+02, -7.039759405818603e+02, 2.838316240089585e+02, -9.038676504203400e+02, 1.606691263137671e+03};
+    double pol[5] = {1.145882288545091e+03, 0, -3.630427146836845e-04, 1.047936476714481e-07, -1.000973064316358e-10};
+    double yc = 1.297517959278643e+03;
+    double xc = 1.644502300542033e+03;
 
     //Data for camera 02
     /*double invpol[6] = {-59.8538531950175, 263.398458104873, -408.489996098848, 207.474586622926, -315.138138042516, 531.800061327281};
@@ -32,8 +32,8 @@ public:
     double c = 1;
     double d = 0;
     double e = 0;
-    double width = 768;
-    double length = 1024;
+    double width = 2448;
+    double length = 3264;
 
     /*int get_ocam_model(struct ocam_model *myocam_model, char *filename)
     {
@@ -239,7 +239,7 @@ public:
     private:
         cv::Mat img, ImgPointsx, ImgPointsy;  // definition of matrices for the output image and remapping
         double x, y, z, cos_alpha, x_, y_, z_;
-        int H_res = length/2; // length of the output image
+        int H_res = 1024/2; // length of the output image
 
         double planer_coords[3];
 

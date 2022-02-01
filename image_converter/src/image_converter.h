@@ -61,7 +61,7 @@ public:
 
         cv::resize(new_image, resized_image, cv::Size(width*1.5, height*1.5));
 
-        cv::imshow(OPENCV_WINDOW,new_image);
+        cv::imshow(OPENCV_WINDOW, resized_image);
 
         int k = cv::waitKey(1);
 
