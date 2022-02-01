@@ -144,8 +144,8 @@ public:
 
         double alpha = theta_max - theta_min;
 
-        double delta_min = CV_PI/4;
-        double delta_max = CV_PI/2;
+        double delta_min = CV_PI/4 - CV_PI/20;
+        double delta_max = CV_PI/2 - CV_PI/20;
 
         double gamma = delta_max - delta_min;
 
@@ -239,7 +239,7 @@ public:
     private:
         cv::Mat img, ImgPointsx, ImgPointsy;  // definition of matrices for the output image and remapping
         double x, y, z, cos_alpha, x_, y_, z_;
-        int H_res = length/4; // length of the output image
+        int H_res = length/2; // length of the output image
 
         double planer_coords[3];
 
