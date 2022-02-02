@@ -143,15 +143,11 @@ public:
         cp_y = c[1];
         cp_z = c[2];
         
-        static tf::TransformBroadcaster br;
-
-        transform.setOrigin(tf::Vector3(tvecs[0], tvecs[1], tvecs[2]));
-        q.setRPY(rvecs[0], rvecs[1], rvecs[2]);
-        transform.setRotation(q);
+        static tf::TransformBroadcaster br;      
         
-        x_ = transform.inverse().getOrigin().x();
-        y_ = transform.inverse().getOrigin().y();
-        z_ = transform.inverse().getOrigin().z();
+        x_ = tvecs[0];
+        y_ = tvecs[1];
+        z_ = tvecs[2];
 
         x_pr = x_/z_;
         y_pr = y_/z_;
@@ -175,11 +171,12 @@ public:
         abs_cam = nh.subscribe("/vrpn_client_node/fisheyed_camera/pose", 1000, &arucoMarker::update_cam_pose, this);
         abs_mrkr = nh.subscribe("/vrpn_client_node/fisheyed_marker/pose", 1000, &arucoMarker::update_mrkr_pose, this);
 
-        transform2.setOrigin(tf::Vector3(p_x, p_y, p_z));
-        transform2.setRotation(transform.inverse().getRotation());
+        transform.setOrigin(tf::Vector3(p_x, p_y, p_z));
+        q.setRPY(rvecs[0], rvecs[1], rvecs[2]);
+        transform.setRotation(q);
 
-        //br.sendTransform(tf::StampedTransform(transform2, ros::Time::now(), "fisheyed_camera", "fisheyed_marker_pred"));
-        br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "fisheyed_marker", "fisheyed_camera_pred"));
+        br.sendTransform(tf::StampedTransform(transform2, ros::Time::now(), "fisheyed_camera", "fisheyed_marker_pred"));
+        //br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "fisheyed_marker", "fisheyed_camera_pred"));
 
         /*if (abs_cam && abs_mrkr)
         {
