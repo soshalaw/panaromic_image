@@ -144,8 +144,8 @@ public:
 
         double alpha = theta_max - theta_min;
 
-        double delta_min = CV_PI/4 - CV_PI/20;
-        double delta_max = CV_PI/2 - CV_PI/20;
+        double delta_min = CV_PI/4;
+        double delta_max = CV_PI/2;
 
         double gamma = delta_max - delta_min;
 
@@ -167,7 +167,7 @@ public:
 
             for(int j = 0; j < H_res; j++)
             {
-                x_ = tan(alpha/2) - j*2*tan(alpha/2)/H_res;
+                x_ = - tan(alpha/2) + j*2*tan(alpha/2)/H_res;
 
                 /*x = -cp_y*x_ - cp_x*cp_z*y_ + cp_x;
                 y = cp_x*x_ - cp_y*cp_z*y_ + cp_y;
