@@ -173,9 +173,11 @@ public:
 
         transform.setOrigin(tf::Vector3(p_x, p_y, p_z));
         q.setRPY(rvecs[0], rvecs[1], rvecs[2]);
+        q.normalize();
         transform.setRotation(q);
 
-        br.sendTransform(tf::StampedTransform(transform2, ros::Time::now(), "fisheyed_camera", "fisheyed_marker_pred"));
+
+        br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "fisheyed_camera", "fisheyed_marker_pred"));
         //br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "fisheyed_marker", "fisheyed_camera_pred"));
 
         /*if (abs_cam && abs_mrkr)
