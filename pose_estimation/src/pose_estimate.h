@@ -15,10 +15,10 @@ private:
 
     cv::Mat camera_matrix = cv::Mat::eye(3, 3, CV_64FC1);
     //512p 60_45
-    cv::Mat distcoefs = (cv::Mat_<double>(5 , 1) << 0.54538624, -1.35253294, -0.14240678, -0.0014708, 1.2996516);
+    cv::Mat distcoefs = (cv::Mat_<double>(5 , 1) << -0.427771206145061, 0.633996195883629, -0.045465437991085, 0.039523036767817, -0.404909636477268);
     //768p 90_60
     //cv::Mat distcoefs = (cv::Mat_<double>(5 , 1) << 0.00652234, -0.00916935, -0.04434304, 0.00916721, -0.0195544);
-    cv::Ptr<cv::aruco::Dictionary> Dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
+    cv::Ptr<cv::aruco::Dictionary> Dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_250);
 
     ros::NodeHandle nh;
     ros::Publisher pub;
@@ -40,10 +40,10 @@ public:
     arucoMarker()
     {
         //resolution 512 60_45
-        camera_matrix.at<double>(0,0) = 662.38278316;
-        camera_matrix.at<double>(0,2) = 266.18607906;
-        camera_matrix.at<double>(1,1) = 700.94292974;
-        camera_matrix.at<double>(1,2) = 266.18607906;
+        camera_matrix.at<double>(0,0) = 4.907252377393949e+02;
+        camera_matrix.at<double>(0,2) = 1.358011912842060e+02;
+        camera_matrix.at<double>(1,1) = 4.893497005137714e+02;
+        camera_matrix.at<double>(1,2) = 1.228809311531833e+02;
 
         //resolution 768 90-60
         /*camera_matrix.at<double>(0,0) = 441.6957675;
@@ -180,7 +180,7 @@ public:
         br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "fisheyed_camera", "fisheyed_marker_pred"));
         //br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "fisheyed_marker", "fisheyed_camera_pred"));
 
-        /*if (abs_cam && abs_mrkr)
+        if (abs_cam && abs_mrkr)
         {
             abs_x = mrkr_x - cam_x;
             std::cout << abs_x << std::endl;
@@ -190,10 +190,10 @@ public:
             abs_dist = sqrt((abs_x*abs_x + abs_y*abs_y + abs_z*abs_z));
 
             error = abs(abs_dist - est_dist);
-            accuracy = (est_dist/abs_dist)*100;
+            accuracy = 100 - (error/abs_dist)*100;
 
            ROS_INFO_STREAM("Error: "<< error << " Accuracy: " << accuracy << " Absolute_dist :" << abs_dist);
-        }*/
+        }
     }
 
 };
