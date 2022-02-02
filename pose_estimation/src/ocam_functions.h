@@ -150,7 +150,7 @@ public:
 
             for(int j = 0; j < H_res; j++)
             {
-                x_ = tan(alpha/2) - j*2*tan(alpha/2)/H_res;
+                x_ = -tan(alpha/2) + j*2*tan(alpha/2)/H_res;
 
                 x = cp_y*x_ + cp_x*cp_z*y_ + cp_x;
                 y = -cp_x*x_ + cp_y*cp_z*y_ + cp_y;
