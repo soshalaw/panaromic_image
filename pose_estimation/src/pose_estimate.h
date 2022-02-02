@@ -193,8 +193,8 @@ public:
             error = abs(abs_dist - est_dist);
             accuracy = (est_dist/abs_dist)*100;
 
-           ROS_INFO_STREAM("Error: "<< error << " Accuracy: " << accuracy << " Absolute_dist :" << abs_dist);*/
-        }
+           ROS_INFO_STREAM("Error: "<< error << " Accuracy: " << accuracy << " Absolute_dist :" << abs_dist);
+        }*/
     }
 
 };
