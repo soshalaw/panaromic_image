@@ -57,12 +57,12 @@ public:
         new_image = estimate.pose_marker(frame, c);
         //new_image = estimate.pose_board(frame, c);
 
-        double width = new_image.size().width;
+       /* double width = new_image.size().width;
         double height = new_image.size().height;
 
-        cv::resize(new_image, resized_image, cv::Size(width, height));
+        cv::resize(new_image, resized_image, cv::Size(width, height));*/
 
-        cv::imshow(OPENCV_WINDOW,resized_image);
+        cv::imshow(OPENCV_WINDOW, new_image);
 
         int k = cv::waitKey(1);
 

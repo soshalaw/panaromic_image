@@ -15,10 +15,10 @@ private:
 
     cv::Mat camera_matrix = cv::Mat::eye(3, 3, CV_64FC1);
     //512p 60_45
-    cv::Mat distcoefs = (cv::Mat_<double>(5 , 1) << -0.38338648, -1.57896575, -0.07122406, 0.00592863, 2.92092864);
+    cv::Mat distcoefs = (cv::Mat_<double>(5 , 1) << 0.54538624, -1.35253294, -0.14240678, -0.0014708, 1.2996516);
     //768p 90_60
     //cv::Mat distcoefs = (cv::Mat_<double>(5 , 1) << 0.00652234, -0.00916935, -0.04434304, 0.00916721, -0.0195544);
-    cv::Ptr<cv::aruco::Dictionary> Dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_250);
+    cv::Ptr<cv::aruco::Dictionary> Dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
 
     ros::NodeHandle nh;
     ros::Publisher pub;
@@ -40,10 +40,10 @@ public:
     arucoMarker()
     {
         //resolution 512 60_45
-        camera_matrix.at<double>(0,0) = 721.21914642;
-        camera_matrix.at<double>(0,2) = 260.50281859;
-        camera_matrix.at<double>(1,1) = 726.28250788;
-        camera_matrix.at<double>(1,2) = 38.1701906;
+        camera_matrix.at<double>(0,0) = 662.38278316;
+        camera_matrix.at<double>(0,2) = 266.18607906;
+        camera_matrix.at<double>(1,1) = 700.94292974;
+        camera_matrix.at<double>(1,2) = 266.18607906;
 
         //resolution 768 90-60
         /*camera_matrix.at<double>(0,0) = 441.6957675;
