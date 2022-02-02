@@ -14,8 +14,8 @@ class arucoMarker
 private:
 
     cv::Mat camera_matrix = cv::Mat::eye(3, 3, CV_64FC1);
-    //512p 90_60
-    cv::Mat distcoefs = (cv::Mat_<double>(5 , 1) << -0.09252277, 0.17653478, -0.01388358, 0.00633439, -0.11124765);
+    //512p 60_45
+    cv::Mat distcoefs = (cv::Mat_<double>(5 , 1) << -0.38338648, -1.57896575, -0.07122406, 0.00592863, 2.92092864);
     //768p 90_60
     //cv::Mat distcoefs = (cv::Mat_<double>(5 , 1) << 0.00652234, -0.00916935, -0.04434304, 0.00916721, -0.0195544);
     cv::Ptr<cv::aruco::Dictionary> Dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_250);
@@ -39,11 +39,11 @@ public:
 
     arucoMarker()
     {
-        //resolution 512 90_60
-        camera_matrix.at<double>(0,0) = 283.430152308643;
-        camera_matrix.at<double>(0,2) = 261.212883329824;
-        camera_matrix.at<double>(1,1) = 282.882284500171;
-        camera_matrix.at<double>(1,2) = 147.952673195220;
+        //resolution 512 60_45
+        camera_matrix.at<double>(0,0) = 721.21914642;
+        camera_matrix.at<double>(0,2) = 260.50281859;
+        camera_matrix.at<double>(1,1) = 726.28250788;
+        camera_matrix.at<double>(1,2) = 38.1701906;
 
         //resolution 768 90-60
         /*camera_matrix.at<double>(0,0) = 441.6957675;

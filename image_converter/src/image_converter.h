@@ -59,7 +59,7 @@ public:
         double width = new_image.size().width;
         double height = new_image.size().height;
 
-        cv::resize(new_image, resized_image, cv::Size(width*1.5, height*1.5));
+        cv::resize(img, resized_image, cv::Size(width, height));
 
         cv::imshow(OPENCV_WINDOW, resized_image);
 
@@ -67,8 +67,8 @@ public:
 
         if (k%256 == 32)
         {
-            std::string str = "/home/soshala/internship/camera_calibration/camera_01/data_12_512_60_45/opencv_frame_" +std::to_string(l)+ ".png";
-            cv::imwrite(str,new_image);
+            std::string str = "/home/soshala/internship/camera_calibration/camera_01/data13/opencv_frame_" +std::to_string(l)+ ".png";
+            cv::imwrite(str,img);
             l++;
         }
 
