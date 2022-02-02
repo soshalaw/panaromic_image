@@ -146,7 +146,7 @@ public:
 
         for(int i = 0 ; i < V_res; i++)
         {
-            y_ = tan(gamma/2) - i*2*tan(gamma/2)/V_res;
+            y_ = -tan(gamma/2) + i*2*tan(gamma/2)/V_res;
 
             for(int j = 0; j < H_res; j++)
             {

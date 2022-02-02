@@ -60,7 +60,7 @@ public:
         double width = new_image.size().width;
         double height = new_image.size().height;
 
-        cv::resize(new_image, resized_image, cv::Size(width*1.5, height*1.5));
+        cv::resize(new_image, resized_image, cv::Size(width, height));
 
         cv::imshow(OPENCV_WINDOW,resized_image);
 
