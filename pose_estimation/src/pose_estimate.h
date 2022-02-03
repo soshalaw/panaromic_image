@@ -84,8 +84,8 @@ public:
                 {
                     if (id[i] == ids[j])
                     {
-                        ids_to_est[k] = ids[j];
-                        corners_to_est[k] = corners[j];
+                        ids_to_est.push_back(ids[j]);
+                        corners_to_est.push_back(corners[j]);
                         k++;
                     }
                 }
@@ -139,15 +139,15 @@ public:
 
     void update_cam_pose(const geometry_msgs::PoseStamped& msg)
     {
-        cam_x = msg.pose.position.y;
-        cam_y = msg.pose.position.x;
+        cam_x = msg.pose.position.x;
+        cam_y = msg.pose.position.y;
         cam_z = msg.pose.position.z;
     }
 
     void update_mrkr_pose(const geometry_msgs::PoseStamped& msg)
     {
-        mrkr_x = msg.pose.position.y;
-        mrkr_y = msg.pose.position.x;
+        mrkr_x = msg.pose.position.x;
+        mrkr_y = msg.pose.position.y;
         mrkr_z = msg.pose.position.z;
 
     }
@@ -196,7 +196,7 @@ public:
 
         if (abs_cam && abs_mrkr)
         {
-            abs_y = -(mrkr_x - cam_x);
+            abs_y = (mrkr_x - cam_x);
             abs_x = mrkr_y - cam_y;
             abs_z = mrkr_z - cam_z;
 
@@ -205,7 +205,9 @@ public:
             error= abs(abs_x - p_x);
             accuracy = 100 - abs(error/abs_x)*100;
 
-           ROS_INFO_STREAM("Error x: "<< error << " Accuracy: " << accuracy << " Absolute x :" << abs_dist << "Estimated x :" << p_x);
+           ROS_INFO_STREAM(" Error x: "<< error << " Accuracy: " << accuracy );
+           ROS_INFO_STREAM(" ets x: "<< p_x << " est y: " << p_y << " est z: " << p_z );
+           ROS_INFO_STREAM(" abs x: "<< abs_x << " abs y: " << abs_y << " abs z: " << abs_z );
 
         }
     }
