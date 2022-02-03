@@ -63,25 +63,41 @@ public:
     }
 
 
-    cv::Mat pose_marker(cv::Mat image, double c[3])
+    cv::Mat pose_marker(cv::Mat image, double c[3], std::vector<int> id = {0}, double marker_len = 0.1)
     {
         cv::Mat new_image, gray_img;
         image.copyTo(new_image);
         cv::cvtColor(new_image, gray_img, cv::COLOR_BGR2GRAY);
 
-        std::vector<int> ids;
-        std::vector<std::vector<cv::Point2f>> corners;
+        std::vector<int> ids, ids_to_est;
+        std::vector<std::vector<cv::Point2f>> corners, corners_to_est;
 
-        cv::aruco::detectMarkers(gray_img, Dictionary, corners, ids );
+        int k = 0; //counter for the array of markers to estimate the pose
+
+        cv::aruco::detectMarkers(gray_img, Dictionary, corners, ids);
 
         if (ids.size() > 0)
         {
-            cv::aruco::drawDetectedMarkers(new_image, corners, ids);
+            for (int i = 0; i < id.size(); i++)
+            {
+                for (int j = 0; j < ids.size(); j++)
+                {
+                    if (id[i] == ids[j])
+                    {
+                        ids_to_est[k] = ids[j];
+                        corners_to_est[k] = corners[j];
+                        k++;
+                    }
+                }
+            }
+
+            cv::aruco::drawDetectedMarkers(new_image, corners_to_est, ids_to_est);
             std::vector<cv::Vec3d> rvecs, tvecs;
-            cv::aruco::estimatePoseSingleMarkers(corners, 0.1, camera_matrix, distcoefs, rvecs, tvecs); //0.1 length of the markers to be detected
+            cv::aruco::estimatePoseSingleMarkers(corners, marker_len, camera_matrix, distcoefs, rvecs, tvecs);
 
             for (int i = 0; i < ids.size(); i++ )
             {
+
                 cv::aruco::drawAxis(new_image, camera_matrix, distcoefs, rvecs[i], tvecs[i], 0.1); //0.1 length of the drawn axis
                 broadcast(rvecs[i], tvecs[i], c);
             }
@@ -124,15 +140,15 @@ public:
 
     void update_cam_pose(const geometry_msgs::PoseStamped& msg)
     {
-        cam_x = msg.pose.position.x;
-        cam_y = msg.pose.position.y;
+        cam_x = msg.pose.position.y;
+        cam_y = msg.pose.position.x;
         cam_z = msg.pose.position.z;
     }
 
     void update_mrkr_pose(const geometry_msgs::PoseStamped& msg)
     {
-        mrkr_x = msg.pose.position.x;
-        mrkr_y = msg.pose.position.y;
+        mrkr_x = msg.pose.position.y;
+        mrkr_y = msg.pose.position.x;
         mrkr_z = msg.pose.position.z;
 
     }
@@ -178,22 +194,20 @@ public:
 
 
         br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "fisheyed_camera", "fisheyed_marker_pred"));
-        //br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "fisheyed_marker", "fisheyed_camera_pred"));
 
-        /*if (abs_cam && abs_mrkr)
+        if (abs_cam && abs_mrkr)
         {
-            abs_x = mrkr_x - cam_x;
-            std::cout << abs_x << std::endl;
-            abs_y = mrkr_y - cam_y;
+            abs_y = -(mrkr_x - cam_x);
+            abs_x = mrkr_y - cam_y;
             abs_z = mrkr_z - cam_z;
 
-            abs_dist = sqrt((abs_x*abs_x + abs_y*abs_y + abs_z*abs_z));
+            //abs_dist = sqrt((abs_x*abs_x + abs_y*abs_y + abs_z*abs_z));
 
-            error = abs(abs_dist - est_dist);
-            accuracy = (est_dist/abs_dist)*100;
+            error= abs(abs_x - p_x);
+            accuracy = 100 - abs(error/abs_x)*100;
 
-           ROS_INFO_STREAM("Error: "<< error << " Accuracy: " << accuracy << " Absolute_dist :" << abs_dist);
-        }*/
+           ROS_INFO_STREAM("Error x: "<< error << " Accuracy: " << accuracy << " Absolute_dist :" << abs_dist);
+        }
     }
 
 };
