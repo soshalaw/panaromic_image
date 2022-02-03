@@ -57,9 +57,9 @@ public:
         camera_matrix.at<double>(1,1) = 598.235920789867;
         camera_matrix.at<double>(1,2) = 285.442343211893;*/
 
-        camera_matrix.at<double>(0,0) = 364.44;
+        camera_matrix.at<double>(0,0) = 565.5172;
         camera_matrix.at<double>(0,2) = 256;
-        camera_matrix.at<double>(1,1) = 364.44;
+        camera_matrix.at<double>(1,1) = 565.5172;
         camera_matrix.at<double>(1,2) = 126.0153;
 
         blur_window_size = 7;
@@ -204,7 +204,7 @@ public:
 
         if (abs_cam && abs_mrkr)
         {
-            abs_y = (mrkr_x - cam_x);
+            abs_y = -(mrkr_x - cam_x);
             abs_x = mrkr_y - cam_y;
             abs_z = mrkr_z - cam_z;
 
