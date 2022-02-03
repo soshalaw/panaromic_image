@@ -63,7 +63,7 @@ public:
     }
 
 
-    cv::Mat pose_marker(cv::Mat image, double c[3], std::vector<int> id = {0}, double marker_len = 0.1)
+    cv::Mat pose_marker(cv::Mat image, double c[3], std::vector<int> id, double marker_len)
     {
         cv::Mat new_image, gray_img;
         image.copyTo(new_image);
@@ -93,11 +93,10 @@ public:
 
             cv::aruco::drawDetectedMarkers(new_image, corners_to_est, ids_to_est);
             std::vector<cv::Vec3d> rvecs, tvecs;
-            cv::aruco::estimatePoseSingleMarkers(corners, marker_len, camera_matrix, distcoefs, rvecs, tvecs);
+            cv::aruco::estimatePoseSingleMarkers(corners_to_est, marker_len, camera_matrix, distcoefs, rvecs, tvecs);
 
             for (int i = 0; i < ids.size(); i++ )
             {
-
                 cv::aruco::drawAxis(new_image, camera_matrix, distcoefs, rvecs[i], tvecs[i], 0.1); //0.1 length of the drawn axis
                 broadcast(rvecs[i], tvecs[i], c);
             }

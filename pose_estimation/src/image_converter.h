@@ -21,6 +21,8 @@ public:
         cv::Mat img, new_image, resized_image;
         double c[3];
         int img_counter = 1;
+        std::vector<int> id = {0};
+        double marker_len = 0.1;
 
     bridge()
     : it_(nh_)
@@ -54,7 +56,7 @@ public:
 
         frame = panaromic.slice(img, c);
 
-        new_image = estimate.pose_marker(frame, c);
+        new_image = estimate.pose_marker(frame, c, id, marker_len);
         //new_image = estimate.pose_board(frame, c);
 
        /* double width = new_image.size().width;
