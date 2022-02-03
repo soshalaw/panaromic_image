@@ -206,12 +206,7 @@ public:
             error= abs(abs_x - p_x);
             accuracy = 100 - abs(error/abs_x)*100;
 
-           ROS_INFO_STREAM("Error x: "<< error << " Accuracy: " << accuracy << " Absolute_dist :" << abs_dist);
-
-            error = abs(abs_dist - est_dist);
-            accuracy = 100 - (error/abs_dist)*100;
-
-           ROS_INFO_STREAM("Error: "<< error << " Accuracy: " << accuracy << " Absolute_dist :" << abs_dist);
+           ROS_INFO_STREAM("Error x: "<< error << " Accuracy: " << accuracy << " Absolute x :" << abs_dist << "Estimated x :" << p_x);
 
         }
     }
