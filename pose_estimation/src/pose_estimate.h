@@ -203,17 +203,16 @@ public:
 
             //abs_dist = sqrt((abs_x*abs_x + abs_y*abs_y + abs_z*abs_z));
 
-<<<<<<< HEAD
             error= abs(abs_x - p_x);
             accuracy = 100 - abs(error/abs_x)*100;
 
            ROS_INFO_STREAM("Error x: "<< error << " Accuracy: " << accuracy << " Absolute_dist :" << abs_dist);
-=======
+
             error = abs(abs_dist - est_dist);
             accuracy = 100 - (error/abs_dist)*100;
 
            ROS_INFO_STREAM("Error: "<< error << " Accuracy: " << accuracy << " Absolute_dist :" << abs_dist);
->>>>>>> 9afa858e15106e01c39c95e841a4142e3bbe0d75
+
         }
     }
 
