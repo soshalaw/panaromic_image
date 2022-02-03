@@ -40,7 +40,7 @@ public:
     arucoMarker()
     {
         //resolution 512 60_45
-        camera_matrix.at<double>(0,0) = 4.907252377393949e+02;
+        /*camera_matrix.at<double>(0,0) = 4.907252377393949e+02;
         camera_matrix.at<double>(0,2) = 1.358011912842060e+02;
         camera_matrix.at<double>(1,1) = 4.893497005137714e+02;
         camera_matrix.at<double>(1,2) = 1.228809311531833e+02;
@@ -57,6 +57,11 @@ public:
         camera_matrix.at<double>(1,1) = 598.235920789867;
         camera_matrix.at<double>(1,2) = 285.442343211893;*/
 
+        camera_matrix.at<double>(0,0) = 364.44;
+        camera_matrix.at<double>(0,2) = 256;
+        camera_matrix.at<double>(1,1) = 364.44;
+        camera_matrix.at<double>(1,2) = 126.0153;
+
         blur_window_size = 7;
 
         pub = nh.advertise<geometry_msgs::Pose>("pose",5);
@@ -71,6 +76,7 @@ public:
 
         std::vector<int> ids, ids_to_est;
         std::vector<std::vector<cv::Point2f>> corners, corners_to_est;
+        std::vector<cv::Vec3d> rvecs, tvecs;
 
         int k = 0; //counter for the array of markers to estimate the pose
 
@@ -91,11 +97,13 @@ public:
                 }
             }
 
-            cv::aruco::drawDetectedMarkers(new_image, corners_to_est, ids_to_est);
-            std::vector<cv::Vec3d> rvecs, tvecs;
-            cv::aruco::estimatePoseSingleMarkers(corners_to_est, marker_len, camera_matrix, distcoefs, rvecs, tvecs);
+            if(ids_to_est.size() > 0)
+            {
+                cv::aruco::drawDetectedMarkers(new_image, corners_to_est, ids_to_est);
+                cv::aruco::estimatePoseSingleMarkers(corners_to_est, marker_len, camera_matrix, distcoefs, rvecs, tvecs);
+            }
 
-            for (int i = 0; i < ids.size(); i++ )
+            for (int i = 0; i < ids_to_est.size(); i++ )
             {
                 cv::aruco::drawAxis(new_image, camera_matrix, distcoefs, rvecs[i], tvecs[i], 0.1); //0.1 length of the drawn axis
                 broadcast(rvecs[i], tvecs[i], c);
