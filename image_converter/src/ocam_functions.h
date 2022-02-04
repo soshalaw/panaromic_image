@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------------
    Example code that shows the use of the 'cam2world" and 'world2cam" functions
    Shows also how to undistort images into perspective or panoramic images
-   Copyright (C) 2008 DAVIDE SCARAMUZZA, ETH Zurich
+   Copyright (C) 2008 DAVIDE SCARAMUZZA, ETH Zurich  
    Author: Davide Scaramuzza - email: davide.scaramuzza@ieee.org
 ------------------------------------------------------------------------------*/
 
@@ -16,6 +16,24 @@ public:
 
     paranomic() {
     }
+
+    //data for camera 01
+    double invpol[6] = {-1.075233654325322e+02, 4.704007234612547e+02, -7.039759405818603e+02, 2.838316240089585e+02, -9.038676504203400e+02, 1.606691263137671e+03};
+    double pol[5] = {1.145882288545091e+03, 0, -3.630427146836845e-04, 1.047936476714481e-07, -1.000973064316358e-10};
+    double yc = 1.297517959278643e+03;
+    double xc = 1.644502300542033e+03;
+
+    //Data for camera 02
+    /*double invpol[6] = {-59.8538531950175, 263.398458104873, -408.489996098848, 207.474586622926, -315.138138042516, 531.800061327281};
+    double pol[5] = {391.907107188337, 0 -0.00122581421780381, 1.66113248106314e-06, -3.95801361798808e-09};
+    double yc = 428.751415334770;
+    double xc = 520.061031981158;*/
+
+    double c = 1;
+    double d = 0;
+    double e = 0;
+    double width = 2448;
+    double length = 3264;
 
     /*int get_ocam_model(struct ocam_model *myocam_model, char *filename)
     {
@@ -103,10 +121,10 @@ public:
         {
           rho *= t;
           rho += invpol[i];
+        y = point3D[1]*invnorm*rho;
         }
 
         x = point3D[0]*invnorm*rho;
-        y = point3D[1]*invnorm*rho;
 
         point2D[0] = x*c + y*d + xc;
         point2D[1] = x*e + y   + yc;
@@ -116,9 +134,10 @@ public:
         point2D[0] = xc;
         point2D[1] = yc;
       }
+
     }
 
-    cv::Mat slice(cv::Mat M, double c[3])
+    cv::Mat slice(cv::Mat M)
     {
         double theta_min = CV_PI/3;
         double theta_max = CV_PI/3 + CV_PI/3;
@@ -132,15 +151,15 @@ public:
 
         double theta = 0;
 
-        int V_res = tan(gamma/2)*H_res/tan(alpha/2);     
+        int V_res = tan(gamma/2)*H_res/tan(alpha/2);
 
         img.create(V_res, H_res,M.type());
         ImgPointsx.create(img.size(), CV_32FC1);
         ImgPointsy.create(img.size(), CV_32FC1);
 
-        c[0] = cp_x = sin(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
-        c[1] = cp_y = cos(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
-        c[2] = cp_z = cos(delta_min + (gamma)/2);
+        cp_x = sin(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
+        cp_y = cos(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
+        cp_z = cos(delta_min + (gamma)/2);
 
         for(int i = 0 ; i < V_res; i++)
         {
@@ -148,15 +167,19 @@ public:
 
             for(int j = 0; j < H_res; j++)
             {
-                x_ = -tan(alpha/2) + j*2*tan(alpha/2)/H_res;
+                x_ = - tan(alpha/2) + j*2*tan(alpha/2)/H_res;
+
+                /*x = -cp_y*x_ - cp_x*cp_z*y_ + cp_x;
+                y = cp_x*x_ - cp_y*cp_z*y_ + cp_y;
+                z = -(-cp_y*cp_y - cp_x*cp_x)*y_ + cp_z;*/
 
                 x = cp_y*x_ + cp_x*cp_z*y_ + cp_x;
                 y = -cp_x*x_ + cp_y*cp_z*y_ + cp_y;
                 z = -(cp_y*cp_y + cp_x*cp_x)*y_ + cp_z;
 
-                planer_coords[0] = x/sqrt(pow(x,2) + pow(y,2) + pow(z,2));
-                planer_coords[1] = y/sqrt(pow(x,2) + pow(y,2) + pow(z,2));
-                planer_coords[2] = z/sqrt(pow(x,2) + pow(y,2) + pow(z,2));
+                planer_coords[0] = x/sqrt(x*x + y*y + z*z);
+                planer_coords[1] = y/sqrt(x*x + y*y + z*z);
+                planer_coords[2] = z/sqrt(x*x + y*y + z*z);
 
                 world2cam(points2D, planer_coords);
 
@@ -215,33 +238,18 @@ public:
 
     private:
         cv::Mat img, ImgPointsx, ImgPointsy;  // definition of matrices for the output image and remapping
-
         double x, y, z, cos_alpha, x_, y_, z_;
+        int H_res = 1024/2; // length of the output image
+
         double planer_coords[3];
+
         double cyl_coords[3];
+
         double points2D[2];
+
+        double p11, p12, p13, p21, p22, p23, p31, p32, p33;
+
         double cp_x, cp_y, cp_z;
-
-        //calibration data camera 02
-    /*
-        double invpol[7] = {1.574237932687930e+02, -1.018358366105118e+03, 2.493947132209159e+03, -2.862265117045929e+03, 1.394006480580508e+03, -1.143189952742257e+03, 1.632148074428312e+03};
-        double pol[5] = {1.178991310625294e+03 ,0 ,-5.233181786845549e-04 ,3.594114182947919e-07 ,-2.062274273749152e-10};
-        double yc = 1.346566996497783e+03;
-        double xc = 1.626900634426923e+03;
-    */
-
-        //calibration data camera 01
-        double invpol[7] = {30.364412352854853, -3.216125170265028e+02, 1.011157924643074e+03, -1.329459542593791e+03, 5.996469483656527e+02, -9.461934542026725e+02, 1.612818112529816e+03};
-        double pol[5] = {1.176204359990972e+03 ,0 ,-4.354667396772434e-04 ,2.203647236497771e-07 ,-1.506561627138972e-10};
-        double yc = 1.307765250016426e+03;
-        double xc = 1.647330746606595e+03;
-
-        double c = 1;
-        double d = 0;
-        double e = 0;
-        double width = 768;
-        double length = 1024;
-        int H_res = length/2; // length of the output image
 
 };
 //------------------------------------------------------------------------------

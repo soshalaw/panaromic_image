@@ -2,5 +2,4 @@
 
 	<node name="pose_estimation" pkg="pose_estimation" type="pose_estimation_node" output="screen">
 	</node>
-
 </launch>

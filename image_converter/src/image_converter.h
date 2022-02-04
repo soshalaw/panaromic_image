@@ -1,6 +1,3 @@
-#ifndef IMAGE_CONVERTER_H
-#define IMAGE_CONVERTER_H
-
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
@@ -22,11 +19,9 @@ class bridge
 public:
 
         cv::Mat img, new_image, resized_image;
+        int l = 1;
         double c[3];
-        int img_counter = 1;
-        std::vector<int> id = {0};
-        double marker_len = 0.1;
-
+        
     bridge()
     : it_(nh_)
     {
@@ -57,23 +52,26 @@ public:
 
         img = cv_ptr->image;
 
-        frame = panaromic.slice(img, c);
+        frame = panaromic.slice(img);
 
         new_image = estimate.pose(frame);
 
-        cv::imshow(OPENCV_WINDOW, new_image);
+        double width = new_image.size().width;
+        double height = new_image.size().height;
+
+        cv::resize(img, resized_image, cv::Size(width*1.5, height*1.5));
+
+        cv::imshow(OPENCV_WINDOW, resized_image);
 
         int k = cv::waitKey(1);
 
         if (k%256 == 32)
         {
-            std::string name = "/home/tue-me-minicar-laptop-02/internship/camera_calibration/camera_02/data4_512p_90_60/open_cv_img" + std::to_string(img_counter) + ".png" ;
-            cv::imwrite(name, new_image);
-            img_counter++;
+            std::string str = "/home/soshala/internship/camera_calibration/camera_02/data1/opencv_frame_" +std::to_string(l)+ ".png";
+            cv::imwrite(str,img);
+            l++;
         }
 
     }
 
 };
-
-#endif // IMAGE_CONVERTER_H
