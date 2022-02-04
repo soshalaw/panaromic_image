@@ -1,9 +1,0 @@
-<launch>
-
-	<node name="rviz" pkg="rviz" type="rviz" args="-d $(find pose_estimation)/validation.rviz" />
-
-	<include file="$(find pose_estimation)/launch/camera.launch" />
-
-	<include file="$(find pose_estimation)/launch/mocap.launch" />
-
-</launch>

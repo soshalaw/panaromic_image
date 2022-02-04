@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------------
    Example code that shows the use of the 'cam2world" and 'world2cam" functions
    Shows also how to undistort images into perspective or panoramic images
-   Copyright (C) 2008 DAVIDE SCARAMUZZA, ETH Zurich  
+   Copyright (C) 2008 DAVIDE SCARAMUZZA, ETH Zurich
    Author: Davide Scaramuzza - email: davide.scaramuzza@ieee.org
 ------------------------------------------------------------------------------*/
 
@@ -116,7 +116,6 @@ public:
         point2D[0] = xc;
         point2D[1] = yc;
       }
-
     }
 
     cv::Mat slice(cv::Mat M, double c[3])
@@ -143,7 +142,6 @@ public:
         c[1] = cp_y = cos(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
         c[2] = cp_z = cos(delta_min + (gamma)/2);
 
-
         for(int i = 0 ; i < V_res; i++)
         {
             y_ = -tan(gamma/2) + i*2*tan(gamma/2)/V_res;
@@ -155,11 +153,6 @@ public:
                 x = cp_y*x_ + cp_x*cp_z*y_ + cp_x;
                 y = -cp_x*x_ + cp_y*cp_z*y_ + cp_y;
                 z = -(cp_y*cp_y + cp_x*cp_x)*y_ + cp_z;
-
-
-                /*x = -cp_y*x_ - cp_x*cp_z*y_ + cp_x;
-                y = cp_x*x_ - cp_y*cp_z*y_ + cp_y;
-                z = -(-cp_y*cp_y - cp_x*cp_x)*y_ + cp_z;*/
 
                 planer_coords[0] = x/sqrt(pow(x,2) + pow(y,2) + pow(z,2));
                 planer_coords[1] = y/sqrt(pow(x,2) + pow(y,2) + pow(z,2));
@@ -227,11 +220,22 @@ public:
         double planer_coords[3];
         double cyl_coords[3];
         double points2D[2];
-        double cp_x, cp_y, cp_z;       
+        double cp_x, cp_y, cp_z;
+
+        //calibration data camera 02
+    /*
+        double invpol[7] = {1.574237932687930e+02, -1.018358366105118e+03, 2.493947132209159e+03, -2.862265117045929e+03, 1.394006480580508e+03, -1.143189952742257e+03, 1.632148074428312e+03};
+        double pol[5] = {1.178991310625294e+03 ,0 ,-5.233181786845549e-04 ,3.594114182947919e-07 ,-2.062274273749152e-10};
+        double yc = 1.346566996497783e+03;
+        double xc = 1.626900634426923e+03;
+    */
+
+        //calibration data camera 01
         double invpol[6] = {-1.075233654325322e+02, 4.704007234612547e+02, -7.039759405818603e+02, 2.838316240089585e+02, -9.038676504203400e+02, 1.606691263137671e+03};
         double pol[5] = {1.145882288545091e+03, 0, -3.630427146836845e-04, 1.047936476714481e-07, -1.000973064316358e-10};
         double yc = 1.297517959278643e+03;
         double xc = 1.644502300542033e+03;
+
         double c = 1;
         double d = 0;
         double e = 0;

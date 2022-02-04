@@ -1,3 +1,6 @@
+#ifndef IMAGE_CONVERTER_H
+#define IMAGE_CONVERTER_H
+
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
@@ -57,12 +60,6 @@ public:
         frame = panaromic.slice(img, c);
 
         new_image = estimate.pose_marker(frame, c, id, marker_len);
-        //new_image = estimate.pose_board(frame, c);
-
-       /* double width = new_image.size().width;
-        double height = new_image.size().height;
-
-        cv::resize(new_image, resized_image, cv::Size(width, height));*/
 
         cv::imshow(OPENCV_WINDOW, new_image);
 
@@ -78,3 +75,5 @@ public:
     }
 
 };
+
+#endif // IMAGE_CONVERTER_H
