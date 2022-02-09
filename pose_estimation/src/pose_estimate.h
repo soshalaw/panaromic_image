@@ -163,13 +163,13 @@ public:
         x_pr = x_/z_;
         y_pr = y_/z_;
 
-        double modx = sqrt(cp_y^2 + cp_x^2);
-        double mody = sqrt((cp_x*cp_z)^2 + (cp_y*cp_z)^2 + (-cp_y*cp_y - cp_x*cp_x)^2);
-        double modz = sqrt(cp_x^2 + cp_y^2 + cp_z^2);
+        double modx = sqrt(cp_y*cp_y + cp_x*cp_x);
+        double mody = sqrt((cp_x*cp_z)*(cp_x*cp_z) + (cp_y*cp_z)*(cp_y*cp_z) + (cp_y*cp_y + cp_x*cp_x)*(cp_y*cp_y + cp_x*cp_x));
+        double modz = sqrt(cp_x*cp_x + cp_y*cp_y + cp_z*cp_z);
 
-        x_tr = cp_y*x_pr/modx + cp_x*cp_z*y_pr/mody + cp_x/modz;
-        y_tr = -cp_x*x_pr/modx + cp_y*cp_z*y_pr/mody + cp_y/modz;
-        z_tr = -(cp_y*cp_y + cp_x*cp_x)*y_pr/mody + cp_z/modz;
+        x_tr = cp_y*x_pr/modx + cp_x*cp_z*y_pr/mody + cp_x;
+        y_tr = -cp_x*x_pr/modx + cp_y*cp_z*y_pr/mody + cp_y;
+        z_tr = -(cp_y*cp_y + cp_x*cp_x)*y_pr/mody + cp_z;
 
         /*x_tr = cp_y*x_ + cp_x*cp_z*y_ + cp_x*z_;
         y_tr = -cp_x*x_ + cp_y*cp_z*y_ + cp_y*z_;
