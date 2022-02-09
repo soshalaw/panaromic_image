@@ -165,7 +165,11 @@ public:
 
         x_tr = cp_y*x_pr + cp_x*cp_z*y_pr + cp_x;
         y_tr = -cp_x*x_pr + cp_y*cp_z*y_pr + cp_y;
-        z_tr = -(cp_y*cp_y + cp_x*cp_x)*y_ + cp_z;
+        z_tr = -(cp_y*cp_y + cp_x*cp_x)*y_pr + cp_z;
+
+        /*x_tr = cp_y*x_ + cp_x*cp_z*y_ + cp_x*z_;
+        y_tr = -cp_x*x_ + cp_y*cp_z*y_ + cp_y*z_;
+        z_tr = -(cp_y*cp_y + cp_x*cp_x)*y_ + cp_z*z_;*/
 
         mod = sqrt(x_tr*x_tr + y_tr*y_tr + z_tr*z_tr);
 
@@ -181,6 +185,10 @@ public:
         q.setRPY(rvecs[0], rvecs[1], rvecs[2]);
         q.normalize();
         transform.setRotation(q);
+
+        /*pose.position.x = x_tr;
+        pose.position.y = y_tr;
+        pose.position.z = z_tr;*/
 
         pose.position.x = p_x;
         pose.position.y = p_y;
