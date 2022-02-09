@@ -29,7 +29,7 @@ private:
     tf::Quaternion q;
 
     int blur_window_size;
-    double x, y, z, cp_x, cp_y, cp_z, p_x, p_y, p_z, x_tr, y_tr, z_tr, x_pr, y_pr, mod;
+    double x, y, z, cp_x, cp_y, cp_z, p_x, p_y, p_z, x_tr, y_tr, z_tr, x_pr, y_pr, mod, modx, mody;
     double x_, y_, z_;
     double perimeter;      //perimeter of the marker in pixels
     double pixels_per_sqr;    // number of pixels in a square of the marker
@@ -163,17 +163,12 @@ public:
         x_pr = x_/z_;
         y_pr = y_/z_;
 
-        double modx = sqrt(cp_y*cp_y + cp_x*cp_x);
-        double mody = sqrt((cp_x*cp_z)*(cp_x*cp_z) + (cp_y*cp_z)*(cp_y*cp_z) + (cp_y*cp_y + cp_x*cp_x)*(cp_y*cp_y + cp_x*cp_x));
-        double modz = sqrt(cp_x*cp_x + cp_y*cp_y + cp_z*cp_z);
+        modx = sqrt(cp_y*cp_y + cp_x*cp_x);
+        mody = sqrt((cp_x*cp_z)*(cp_x*cp_z) + (cp_y*cp_z)*(cp_y*cp_z) + (cp_y*cp_y + cp_x*cp_x)*(cp_y*cp_y + cp_x*cp_x));
 
         x_tr = cp_y*x_pr/modx + cp_x*cp_z*y_pr/mody + cp_x;
         y_tr = -cp_x*x_pr/modx + cp_y*cp_z*y_pr/mody + cp_y;
         z_tr = -(cp_y*cp_y + cp_x*cp_x)*y_pr/mody + cp_z;
-
-        /*x_tr = cp_y*x_ + cp_x*cp_z*y_ + cp_x*z_;
-        y_tr = -cp_x*x_ + cp_y*cp_z*y_ + cp_y*z_;
-        z_tr = -(cp_y*cp_y + cp_x*cp_x)*y_ + cp_z*z_;*/
 
         mod = sqrt(x_tr*x_tr + y_tr*y_tr + z_tr*z_tr);
 
@@ -189,10 +184,6 @@ public:
         q.setRPY(rvecs[0], rvecs[1], rvecs[2]);
         q.normalize();
         transform.setRotation(q);
-
-        /*pose.position.x = x_tr;
-        pose.position.y = y_tr;
-        pose.position.z = z_tr;*/
 
         pose.position.x = p_x;
         pose.position.y = p_y;
