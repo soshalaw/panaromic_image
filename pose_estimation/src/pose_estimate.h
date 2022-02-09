@@ -142,7 +142,6 @@ public:
                 broadcast(rvecs, tvecs, c);
             }
         }
-
         return new_image;
     }
 
@@ -152,20 +151,25 @@ public:
         cp_y = c[1];
         cp_z = c[2];
         
-
         static tf::TransformBroadcaster br;
         geometry_msgs::Pose pose;
         
         x_ = tvecs[0];
         y_ = tvecs[1];
         z_ = tvecs[2];
+
         ROS_INFO_STREAM("x : "<< x_ << "y : " << y_ << "z : " << z_ );
+
         x_pr = x_/z_;
         y_pr = y_/z_;
 
-        x_tr = cp_y*x_pr + cp_x*cp_z*y_pr + cp_x;
-        y_tr = -cp_x*x_pr + cp_y*cp_z*y_pr + cp_y;
-        z_tr = -(cp_y*cp_y + cp_x*cp_x)*y_pr + cp_z;
+        double modx = sqrt(cp_y^2 + cp_x^2);
+        double mody = sqrt((cp_x*cp_z)^2 + (cp_y*cp_z)^2 + (-cp_y*cp_y - cp_x*cp_x)^2);
+        double modz = sqrt(cp_x^2 + cp_y^2 + cp_z^2);
+
+        x_tr = cp_y*x_pr/modx + cp_x*cp_z*y_pr/mody + cp_x/modz;
+        y_tr = -cp_x*x_pr/modx + cp_y*cp_z*y_pr/mody + cp_y/modz;
+        z_tr = -(cp_y*cp_y + cp_x*cp_x)*y_pr/mody + cp_z/modz;
 
         /*x_tr = cp_y*x_ + cp_x*cp_z*y_ + cp_x*z_;
         y_tr = -cp_x*x_ + cp_y*cp_z*y_ + cp_y*z_;
