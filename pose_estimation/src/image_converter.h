@@ -22,7 +22,13 @@ public:
         double c[3];
         int img_counter = 1;
         std::vector<int> id = {0};
-        double marker_len = 0.1;
+
+        double marker_len = 0.15;
+        double theta_min = CV_PI/3;
+        double theta_max = CV_PI/3 + CV_PI/3;
+        double delta_min = CV_PI/4;
+        double delta_max = CV_PI/2;
+
 
     bridge()
     : it_(nh_)
@@ -54,15 +60,9 @@ public:
 
         img = cv_ptr->image;
 
-        frame = panaromic.slice(img, c);
+        frame = panaromic.slice(img, c, theta_min, theta_max, delta_min, delta_max);
 
         new_image = estimate.pose_marker(frame, c, id, marker_len);
-        //new_image = estimate.pose_board(frame, c);
-
-       /* double width = new_image.size().width;
-        double height = new_image.size().height;
-
-        cv::resize(new_image, resized_image, cv::Size(width, height));*/
 
         cv::imshow(OPENCV_WINDOW, new_image);
 
@@ -70,11 +70,10 @@ public:
 
         if (k%256 == 32)
         {
-            std::string name = "/home/tue-me-minicar-laptop-02/internship/camera_calibration/camera_02/data4_512p_90_60/open_cv_img" + std::to_string(img_counter) + ".png" ;
+            std::string name = "/home/tue-me-minicar-laptop-02/internship/camera_calibration/camera_01/open_cv_img" + std::to_string(img_counter) + ".png" ;
             cv::imwrite(name, new_image);
             img_counter++;
         }
 
     }
-
 };
