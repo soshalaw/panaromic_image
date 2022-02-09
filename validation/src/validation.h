@@ -4,6 +4,7 @@
 #include <ros/ros.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <tf/tf.h>
 
 
 class validation
@@ -11,8 +12,10 @@ class validation
 
 private:
     double cam_x, cam_y, cam_z, mrkr_x, mrkr_y, mrkr_z, est_x, est_y, est_z, mod;
+    double mrkr_qx, mrkr_qy, mrkr_qz, mrkr_qw;
     double error_x, accuracy_x, error_y, accuracy_y, error_z, accuracy_z;
-    double abs_x, abs_y, abs_z;
+    double roll, pitch, yaw;
+    double abs_x, abs_y, abs_z, abs_relx, abs_rely, abs_relz;
 
     ros::NodeHandle nh;
     ros::Subscriber abs_cam;
@@ -32,6 +35,11 @@ public:
         cam_x = msg.pose.position.x;
         cam_y = msg.pose.position.y;
         cam_z = msg.pose.position.z;
+
+        mrkr_qx = msg.pose.orientation.x;
+        mrkr_qy = msg.pose.orientation.y;
+        mrkr_qz = msg.pose.orientation.z;
+        mrkr_qw = msg.pose.orientation.w;
     }
 
     void update_mrkr_pose(const geometry_msgs::PoseStamped& msg)
@@ -39,7 +47,6 @@ public:
         mrkr_x = msg.pose.position.x;
         mrkr_y = msg.pose.position.y;
         mrkr_z = msg.pose.position.z;
-
     }
 
     void update_mrkr_pose_est(const geometry_msgs::Pose& msg)
@@ -59,14 +66,22 @@ public:
             abs_x = mrkr_y - cam_y;
             abs_z = mrkr_z - cam_z;
 
-            error_x = abs(abs_x - est_x);
-            accuracy_x = 100 - abs(error_x/abs_x)*100;
+            tf::Quaternion q(mrkr_qx, mrkr_qy, mrkr_qz, mrkr_qw);
+            tf::Matrix3x3 m(q);
+            m.getRPY(roll, pitch, yaw);
 
-            error_y = abs(abs_y - est_y);
-            accuracy_y = 100 - abs(error_y/abs_y)*100;
+            abs_relx = abs_x*cos(yaw) - abs_y*sin(yaw);
+            abs_rely = abs_x*sin(yaw) + abs_y*cos(yaw);
+            abs_relz = abs_z;
 
-            error_z = abs(abs_z - est_z);
-            accuracy_z = 100 - abs(error_z/abs_z)*100;
+            error_x = abs(abs_relx - est_x);
+            accuracy_x = 100 - abs(error_x/abs_relx)*100;
+
+            error_y = abs(abs_rely - est_y);
+            accuracy_y = 100 - abs(error_y/abs_rely)*100;
+
+            error_z = abs(abs_relz - est_z);
+            accuracy_z = 100 - abs(error_z/abs_relz)*100;
 
             ROS_INFO_STREAM(" Error x: "<< error_x << " Accuracy x: " << accuracy_x );
             ROS_INFO_STREAM(" Error y: "<< error_y << " Accuracy y: " << accuracy_y );
@@ -76,6 +91,5 @@ public:
             ROS_INFO_STREAM(" ets x: "<< est_x << " est y: " << est_y << " est z: " << est_z );
         }
     }
-
 };
 #endif // VALIDATION_H
