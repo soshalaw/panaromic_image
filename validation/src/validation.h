@@ -28,6 +28,7 @@ public:
             abs_cam = nh.subscribe("/vrpn_client_node/fisheyed_camera/pose", 1000, &validation::update_cam_pose, this);
             abs_mrkr = nh.subscribe("/vrpn_client_node/fisheyed_marker/pose", 1000, &validation::update_mrkr_pose, this);
             est_mrkr = nh.subscribe("/pose", 1000, &validation::update_mrkr_pose_est, this);
+            ROS_INFO_STREAM("Initializing");
     }
 
     void update_cam_pose(const geometry_msgs::PoseStamped& msg)
@@ -62,16 +63,16 @@ public:
     {
         if (abs_cam && abs_mrkr)
         {
-            abs_y = -(mrkr_x - cam_x);
-            abs_x = mrkr_y - cam_y;
+            abs_x = mrkr_x - cam_x;
+            abs_y = mrkr_y - cam_y;
             abs_z = mrkr_z - cam_z;
 
             tf::Quaternion q(mrkr_qx, mrkr_qy, mrkr_qz, mrkr_qw);
             tf::Matrix3x3 m(q);
             m.getRPY(roll, pitch, yaw);
 
-            abs_relx = abs_x*cos(yaw) - abs_y*sin(yaw);
-            abs_rely = abs_x*sin(yaw) + abs_y*cos(yaw);
+            abs_relx = abs_x*cos(yaw) + abs_y*sin(yaw);
+            abs_rely = - abs_x*sin(yaw) + abs_y*cos(yaw);
             abs_relz = abs_z;
 
             error_x = abs(abs_relx - est_x);
@@ -88,6 +89,7 @@ public:
             ROS_INFO_STREAM(" Error z: "<< error_z << " Accuracy z: " << accuracy_z );
 
             ROS_INFO_STREAM(" abs x: "<< abs_x << " abs y: " << abs_y << " abs z: " << abs_z );
+            ROS_INFO_STREAM(" abs rel x: "<< abs_relx << " abs rel y: " << abs_rely << " abs rel z: " << abs_relz );
             ROS_INFO_STREAM(" ets x: "<< est_x << " est y: " << est_y << " est z: " << est_z );
         }
     }

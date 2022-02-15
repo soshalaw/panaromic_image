@@ -11,24 +11,8 @@ static const std::string OPENCV_WINDOW = "Image window";
 
 class bridge
 {
-        ros::NodeHandle nh_;
-        image_transport::ImageTransport it_;
-        image_transport::Subscriber image_sub;
-        arucoMarker estimate;
 
 public:
-
-        cv::Mat img, new_image, resized_image;
-        double c[3];
-        int img_counter = 1;
-        std::vector<int> id = {0};
-
-        double marker_len = 0.15;
-        double theta_min = CV_PI/3;
-        double theta_max = CV_PI/3 + CV_PI/3;
-        double delta_min = CV_PI/4;
-        double delta_max = CV_PI/2;
-
 
     bridge()
     : it_(nh_)
@@ -46,7 +30,6 @@ public:
     {
         cv::Mat frame;
         cv_bridge::CvImagePtr cv_ptr;
-        paranomic panaromic;
 
         try
         {
@@ -62,6 +45,9 @@ public:
 
         frame = panaromic.slice(img, c, theta_min, theta_max, delta_min, delta_max);
 
+        panaromic.def_camera_matrix(camera_matrix, theta_min, theta_max, delta_min, delta_max);
+
+
         new_image = estimate.pose_marker(frame, c, id, marker_len);
 
         cv::imshow(OPENCV_WINDOW, new_image);
@@ -70,10 +56,30 @@ public:
 
         if (k%256 == 32)
         {
-            std::string name = "/home/tue-me-minicar-laptop-02/internship/camera_calibration/camera_01/open_cv_img" + std::to_string(img_counter) + ".png" ;
+            std::string name = "/home/tue-me-minicar-laptop-02/internship/camera_calibration/camera_01/validation_/validation_23/open_cv_img" + std::to_string(img_counter) + ".png" ;
             cv::imwrite(name, new_image);
             img_counter++;
         }
 
     }
+
+private :
+    cv::Mat img, new_image, resized_image;
+    double c[3];
+    int img_counter = 1;
+    std::vector<int> id = {0};
+
+    double marker_len = 0.15;
+    double theta_min = CV_PI/3;
+    double theta_max = 2*CV_PI/3;
+    double delta_min = CV_PI/4;
+    double delta_max = CV_PI/4 + CV_PI/4;
+
+    cv::Mat camera_matrix = cv::Mat::eye(3, 3, CV_64FC1);
+
+    ros::NodeHandle nh_;
+    image_transport::ImageTransport it_;
+    image_transport::Subscriber image_sub;
+    paranomic panaromic;
+    arucoMarker estimate = arucoMarker(camera_matrix);
 };

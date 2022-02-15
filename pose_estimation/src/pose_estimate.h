@@ -13,58 +13,29 @@ class arucoMarker
 
 private:
 
-    //512p 60_45
-    //cv::Mat distcoefs = (cv::Mat_<double>(5 , 1) << -0.427771206145061, 0.633996195883629, -0.045465437991085, 0.039523036767817, -0.404909636477268);
-    //768p 90_60
-    //cv::Mat distcoefs = (cv::Mat_<double>(5 , 1) << 0.00652234, -0.00916935, -0.04434304, 0.00916721, -0.0195544);
     cv::Mat distcoefs = cv::Mat::zeros(5, 1, CV_64FC1);
     cv::Ptr<cv::aruco::Dictionary> Dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_250);
 
     ros::NodeHandle nh;
     ros::Publisher pub;
 
-    geometry_msgs::Pose position;
-
     tf::Transform transform;
     tf::Quaternion q;
 
-    int blur_window_size;
     double x, y, z, cp_x, cp_y, cp_z, p_x, p_y, p_z, x_tr, y_tr, z_tr, x_pr, y_pr, mod, modx, mody;
     double x_, y_, z_;
+
     double perimeter;      //perimeter of the marker in pixels
     double pixels_per_sqr;    // number of pixels in a square of the marker
     double sqr_numbr = 6;        //number of squares in the marker
-    std::vector<double> camera_params;
+
+    cv::Mat camera_matrix;
 
 public:
 
-    cv::Mat camera_matrix = cv::Mat::eye(3, 3, CV_64FC1);
-
-    arucoMarker()
+    arucoMarker(cv::Mat Camera_matrix)
     {
-        //resolution 512 60_45
-        /*camera_matrix.at<double>(0,0) = 4.907252377393949e+02;
-        camera_matrix.at<double>(0,2) = 1.358011912842060e+02;
-        camera_matrix.at<double>(1,1) = 4.893497005137714e+02;
-        camera_matrix.at<double>(1,2) = 1.228809311531833e+02;
-
-        //resolution 768 90-60
-        /*camera_matrix.at<double>(0,0) = 441.6957675;
-        camera_matrix.at<double>(0,2) = 385.65077995;
-        camera_matrix.at<double>(1,1) = 450.91648568;
-        camera_matrix.at<double>(1,2) = 143.78493894;
-
-        //resolution 1024
-        /*camera_matrix.at<double>(0,0) = 590.619400577650;
-        camera_matrix.at<double>(0,2) = 519.693135481507;
-        camera_matrix.at<double>(1,1) = 598.235920789867;
-        camera_matrix.at<double>(1,2) = 285.442343211893;*/
-
-        camera_matrix.at<double>(0,0) = 565.5172;
-        camera_matrix.at<double>(0,2) = 256;
-        camera_matrix.at<double>(1,1) = 565.5172;
-        camera_matrix.at<double>(1,2) = 126.0153;
-
+        camera_matrix = Camera_matrix;
         pub = nh.advertise<geometry_msgs::Pose>("pose",1000);
     }
 
@@ -147,18 +118,16 @@ public:
 
     void broadcast(cv::Vec3d rvecs, cv::Vec3d tvecs, double c[3])
     {
+        static tf::TransformBroadcaster br;
+        geometry_msgs::Pose pose;
+
         cp_x = c[0];
         cp_y = c[1];
         cp_z = c[2];
-        
-        static tf::TransformBroadcaster br;
-        geometry_msgs::Pose pose;
-        
+           
         x_ = tvecs[0];
         y_ = tvecs[1];
         z_ = tvecs[2];
-
-        ROS_INFO_STREAM("x : "<< x_ << "y : " << y_ << "z : " << z_ );
 
         x_pr = x_/z_;
         y_pr = y_/z_;
