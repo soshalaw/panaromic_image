@@ -16,71 +16,6 @@ public:
 
     paranomic() {}
 
-    /*int get_ocam_model(struct ocam_model *myocam_model, char *filename)
-    {
-     double *pol        = myocam_model->pol;
-     double *invpol     = myocam_model->invpol;
-     double *xc         = &(myocam_model->xc);
-     double *yc         = &(myocam_model->yc);
-     double *c          = &(myocam_model->c);
-     double *d          = &(myocam_model->d);
-     double *e          = &(myocam_model->e);
-     int    *width      = &(myocam_model->width);
-     int    *height     = &(myocam_model->height);
-     int *length_pol    = &(myocam_model->length_pol);
-     int *length_invpol = &(myocam_model->length_invpol);
-     FILE *f;
-     char buf[CMV_MAX_BUF];
-     int i;
-
-     //Open file
-     if(!(f=fopen(filename,"r")))
-     {
-       printf("File %s cannot be opened\n", filename);
-       return -1;
-     }
-
-     //Read polynomial coefficients
-     fgets(buf,CMV_MAX_BUF,f);
-     fscanf(f,"\n");
-     fscanf(f,"%d", length_pol);
-     for (i = 0; i < *length_pol; i++)
-     {
-         fscanf(f," %lf",&pol[i]);
-     }
-
-     //Read inverse polynomial coefficients
-     fscanf(f,"\n");
-     fgets(buf,CMV_MAX_BUF,f);
-     fscanf(f,"\n");
-     fscanf(f,"%d", length_invpol);
-     for (i = 0; i < *length_invpol; i++)
-     {
-         fscanf(f," %lf",&invpol[i]);
-     }
-
-     //Read center coordinates
-     fscanf(f,"\n");
-     fgets(buf,CMV_MAX_BUF,f);
-     fscanf(f,"\n");
-     fscanf(f,"%lf %lf\n", xc, yc);
-
-     //Read affine coefficients
-     fgets(buf,CMV_MAX_BUF,f);
-     fscanf(f,"\n");
-     fscanf(f,"%lf %lf %lf\n", c,d,e);
-
-     //Read image size
-     fgets(buf,CMV_MAX_BUF,f);
-     fscanf(f,"\n");
-     fscanf(f,"%d %d", height, width);
-
-     fclose(f);
-     return 0;
-    }*/
-
-
-    //------------------------------------------------------------------------------
     void world2cam(double point2D[2], double point3D[3])
     {
      double norm        = sqrt(point3D[0]*point3D[0] + point3D[1]*point3D[1]);
@@ -223,8 +158,8 @@ public:
         double c_y = foc_len*(gamma/2);
         double c_x = foc_len*(alpha/2);
 
-        camera_matrix.at<double>(0,0) = foc_len/pixel_len_new;
-        camera_matrix.at<double>(0,2) = c_x/pixel_len_new;
+        camera_matrix.at<double>(0,0) = foc_len/pixel_width_new;
+        camera_matrix.at<double>(0,2) = c_x/pixel_width_new;
         camera_matrix.at<double>(1,1) = foc_len/pixel_width_new;
         camera_matrix.at<double>(1,2) = c_y/pixel_width_new;
     }

@@ -88,9 +88,10 @@ public:
             ROS_INFO_STREAM(" Error y: "<< error_y << " Accuracy y: " << accuracy_y );
             ROS_INFO_STREAM(" Error z: "<< error_z << " Accuracy z: " << accuracy_z );
 
-            ROS_INFO_STREAM(" abs x: "<< abs_x << " abs y: " << abs_y << " abs z: " << abs_z );
+            ROS_INFO_STREAM("  ");
             ROS_INFO_STREAM(" abs rel x: "<< abs_relx << " abs rel y: " << abs_rely << " abs rel z: " << abs_relz );
             ROS_INFO_STREAM(" ets x: "<< est_x << " est y: " << est_y << " est z: " << est_z );
+            ROS_INFO_STREAM("  ");
         }
     }
 };

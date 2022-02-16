@@ -22,8 +22,8 @@ private:
     tf::Transform transform;
     tf::Quaternion q;
 
-    double x, y, z, cp_x, cp_y, cp_z, p_x, p_y, p_z, x_tr, y_tr, z_tr, x_pr, y_pr, mod, modx, mody;
-    double x_, y_, z_;
+    double x, y, z, cp_x, cp_y, cp_z, p_x, p_y, p_z, x_tr, y_tr, z_tr, x_pr, y_pr, z_pr, mod, modz_x, modz_y, modx, mody;
+    double x_, y_, z_, z_x, z_y, z_z, omega, phi;
 
     double perimeter;      //perimeter of the marker in pixels
     double pixels_per_sqr;    // number of pixels in a square of the marker
@@ -33,10 +33,12 @@ private:
 
 public:
 
-    arucoMarker(cv::Mat Camera_matrix)
+    arucoMarker(cv::Mat Camera_matrix, double Phi, double Omega)
     {
         camera_matrix = Camera_matrix;
         pub = nh.advertise<geometry_msgs::Pose>("pose",1000);
+        phi = Phi;
+        omega = Omega;
     }
 
     cv::Mat pose_marker(cv::Mat image, double c[3], std::vector<int> id, double marker_len)
@@ -121,16 +123,14 @@ public:
         static tf::TransformBroadcaster br;
         geometry_msgs::Pose pose;
 
+        //transformation from the virtual camera frame to sensor frame
         cp_x = c[0];
         cp_y = c[1];
         cp_z = c[2];
            
-        x_ = tvecs[0];
-        y_ = tvecs[1];
-        z_ = tvecs[2];
-
-        x_pr = x_/z_;
-        y_pr = y_/z_;
+        x_pr = tvecs[0]/tvecs[2];
+        y_pr = tvecs[1]/tvecs[2];
+        z_pr = tvecs[2];
 
         modx = sqrt(cp_y*cp_y + cp_x*cp_x);
         mody = sqrt((cp_x*cp_z)*(cp_x*cp_z) + (cp_y*cp_z)*(cp_y*cp_z) + (cp_y*cp_y + cp_x*cp_x)*(cp_y*cp_y + cp_x*cp_x));
@@ -141,22 +141,35 @@ public:
 
         mod = sqrt(x_tr*x_tr + y_tr*y_tr + z_tr*z_tr);
 
-        x = x_tr/mod;
-        y = y_tr/mod;
-        z = z_tr/mod;
+        x_ = x_tr/mod;
+        y_ = y_tr/mod;
+        z_ = z_tr/mod;
         
-        p_x = x*z_;
-        p_y = y*z_;
-        p_z = z*z_;
+        p_x = x_*z_pr;
+        p_y = y_*z_pr;
+        p_z = z_*z_pr;
 
-        transform.setOrigin(tf::Vector3(p_x, p_y, p_z));
+        //transformation from sensor frame to camera frame
+
+        z_x = sin(phi)*sin(omega);
+        z_y = cos(phi)*sin(omega);
+        z_z = cos(omega);
+
+        modz_x = sqrt(z_y*z_y + z_x*z_x);
+        modz_y = sqrt((z_x*z_z)*(z_x*z_z) + (z_y*z_z)*(z_y*z_z) + (z_y*z_y + z_x*z_x)*(z_y*z_y + z_x*z_x));
+
+        x = -z_y*p_x/modz_x - z_x*z_z*p_y/modz_y + z_x*p_z;
+        y = z_x*p_x/modz_x - z_y*z_z*p_y/modz_y + z_y*p_z;
+        z = (z_y*z_y + z_x*z_x)*p_y/modz_y + z_z*p_z;
+
+        transform.setOrigin(tf::Vector3(x, y, z));
         q.setRPY(rvecs[0], rvecs[1], rvecs[2]);
         q.normalize();
         transform.setRotation(q);
 
-        pose.position.x = p_x;
-        pose.position.y = p_y;
-        pose.position.z = p_z;
+        pose.position.x = x;
+        pose.position.y = y;
+        pose.position.z = z;
 
         pose.orientation.x = q[0];
         pose.orientation.y = q[1];

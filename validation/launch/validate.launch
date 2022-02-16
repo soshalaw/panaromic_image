@@ -4,6 +4,6 @@
 
 	<node name="validation" pkg="validation"  type="validation_node"  output="screen"/>
 
-	<include file="$(find pose_estimation)/launch/mocap.launch" />
+	<include file="$(find validation)/launch/mocap.launch" />
 
 </launch>

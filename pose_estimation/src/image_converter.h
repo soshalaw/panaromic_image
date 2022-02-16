@@ -47,7 +47,6 @@ public:
 
         panaromic.def_camera_matrix(camera_matrix, theta_min, theta_max, delta_min, delta_max);
 
-
         new_image = estimate.pose_marker(frame, c, id, marker_len);
 
         cv::imshow(OPENCV_WINDOW, new_image);
@@ -70,10 +69,13 @@ private :
     std::vector<int> id = {0};
 
     double marker_len = 0.15;
-    double theta_min = CV_PI/3;
-    double theta_max = 2*CV_PI/3;
-    double delta_min = CV_PI/4;
-    double delta_max = CV_PI/4 + CV_PI/4;
+    double theta_min = CV_PI/2 + CV_PI/3;
+    double theta_max = CV_PI/2 + 2*CV_PI/3;
+    double delta_min = CV_PI/12;
+    double delta_max = CV_PI/12 + CV_PI/3;
+    double omega = CV_PI/4;
+    double phi = CV_PI/2;
+
 
     cv::Mat camera_matrix = cv::Mat::eye(3, 3, CV_64FC1);
 
@@ -81,5 +83,5 @@ private :
     image_transport::ImageTransport it_;
     image_transport::Subscriber image_sub;
     paranomic panaromic;
-    arucoMarker estimate = arucoMarker(camera_matrix);
+    arucoMarker estimate = arucoMarker(camera_matrix, phi, omega);
 };
