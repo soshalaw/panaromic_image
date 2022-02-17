@@ -12,6 +12,33 @@
 
 class paranomic
 {
+
+private:
+    cv::Mat img, ImgPointsx, ImgPointsy;  // definition of matrices for the output image and remapping
+
+    double x, y, z, cos_alpha, x_, y_, z_;
+    double planer_coords[3];
+    double cyl_coords[3];
+    double points2D[2];
+    double cp_x, cp_y, cp_z, modx, mody;
+
+    //calibration data camera 01
+    std::vector<double> invpol = {30.364412352854853, -3.216125170265028e+02, 1.011157924643074e+03, -1.329459542593791e+03, 5.996469483656527e+02, -9.461934542026725e+02, 1.612818112529816e+03};
+    std::vector<double> pol = {1.176204359990972e+03 ,0 ,-4.354667396772434e-04 ,2.203647236497771e-07 ,-1.506561627138972e-10};
+    double yc = 1.307765250016426e+03;
+    double xc = 1.647330746606595e+03;
+
+    double c = 1;
+    double d = 0;
+    double e = 0;
+
+    int H_res = 512; // length of the output image
+
+    double pixel_length = 0.0014;  //length of a pixel in mm extracted from the camera specs
+    double foc_len = pol[0]*pixel_length;
+
+    int mode = 0;
+
 public:
 
     paranomic() {}
@@ -67,9 +94,18 @@ public:
         ImgPointsx.create(img.size(), CV_32FC1);
         ImgPointsy.create(img.size(), CV_32FC1);
 
-        c[0] = cp_x = sin(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
-        c[1] = cp_y = cos(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
-        c[2] = cp_z = cos(delta_min + (gamma)/2);
+        if (mode == 1)
+        {
+            c[0] = cp_x = sin(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
+            c[1] = cp_y = cos(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
+            c[2] = cp_z = cos(delta_min + (gamma)/2);
+        }else
+        {
+            c[0] = cp_x = sin(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
+            c[1] = cp_y = cos(delta_min + (gamma)/2);
+            c[2] = cp_z = cos(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
+        }
+
 
         modx = sqrt(cp_y*cp_y + cp_x*cp_x);
         mody = sqrt((cp_x*cp_z)*(cp_x*cp_z) + (cp_y*cp_z)*(cp_y*cp_z) + (cp_y*cp_y + cp_x*cp_x)*(cp_y*cp_y + cp_x*cp_x));
@@ -163,37 +199,6 @@ public:
         camera_matrix.at<double>(1,1) = foc_len/pixel_width_new;
         camera_matrix.at<double>(1,2) = c_y/pixel_width_new;
     }
-
-    private:
-        cv::Mat img, ImgPointsx, ImgPointsy;  // definition of matrices for the output image and remapping
-
-        double x, y, z, cos_alpha, x_, y_, z_;
-        double planer_coords[3];
-        double cyl_coords[3];
-        double points2D[2];
-        double cp_x, cp_y, cp_z, modx, mody;
-
-        //calibration data camera 02
-        /*std::vector<double> invpol = {1.574237932687930e+02, -1.018358366105118e+03, 2.493947132209159e+03, -2.862265117045929e+03, 1.394006480580508e+03, -1.143189952742257e+03, 1.632148074428312e+03};
-        std::vector<double> pol = {1.178991310625294e+03 ,0 ,-5.233181786845549e-04 ,3.594114182947919e-07 ,-2.062274273749152e-10};
-        double yc = 1.346566996497783e+03;
-        double xc = 1.626900634426923e+03;*/
-
-        //calibration data camera 01
-        std::vector<double> invpol = {30.364412352854853, -3.216125170265028e+02, 1.011157924643074e+03, -1.329459542593791e+03, 5.996469483656527e+02, -9.461934542026725e+02, 1.612818112529816e+03};
-        std::vector<double> pol = {1.176204359990972e+03 ,0 ,-4.354667396772434e-04 ,2.203647236497771e-07 ,-1.506561627138972e-10};
-        double yc = 1.307765250016426e+03;
-        double xc = 1.647330746606595e+03;
-
-        double c = 1;
-        double d = 0;
-        double e = 0;
-
-        double length = 1024;
-        int H_res = length/2; // length of the output image
-
-        double pixel_length = 0.0014;  //length of a pixel in mm extracted from the camera specs
-        double foc_len = pol[0]*pixel_length;
 };
 //------------------------------------------------------------------------------
 

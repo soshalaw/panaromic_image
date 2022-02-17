@@ -14,7 +14,7 @@ class arucoMarker
 private:
 
     cv::Mat distcoefs = cv::Mat::zeros(5, 1, CV_64FC1);
-    cv::Ptr<cv::aruco::Dictionary> Dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
+    cv::Ptr<cv::aruco::Dictionary> Dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_250);
 
     ros::NodeHandle nh;
     ros::Publisher pub;

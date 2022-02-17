@@ -12,6 +12,29 @@ static const std::string OPENCV_WINDOW = "Image window";
 class bridge
 {
 
+private :
+    cv::Mat img, new_image, resized_image;
+    double c[3];
+    int img_counter = 1;
+    std::vector<int> id = {0};
+
+    double marker_len = 0.10;
+    double theta_min = - CV_PI/6;
+    double theta_max = CV_PI/6;
+    double delta_min = CV_PI/2 + CV_PI/8;
+    double delta_max = CV_PI/2 + CV_PI/8 + CV_PI/4;
+    double omega = CV_PI/4;
+    double phi = CV_PI/2;
+
+
+    cv::Mat camera_matrix = cv::Mat::eye(3, 3, CV_64FC1);
+
+    ros::NodeHandle nh_;
+    image_transport::ImageTransport it_;
+    image_transport::Subscriber image_sub;
+    paranomic panaromic;
+    arucoMarker estimate = arucoMarker(camera_matrix, phi, omega);
+
 public:
 
     bridge()
@@ -61,27 +84,4 @@ public:
         }
 
     }
-
-private :
-    cv::Mat img, new_image, resized_image;
-    double c[3];
-    int img_counter = 1;
-    std::vector<int> id = {0};
-
-    double marker_len = 0.10;
-    double theta_min = CV_PI/2 + CV_PI/3;
-    double theta_max = CV_PI/2 + 2*CV_PI/3;
-    double delta_min = CV_PI/12;
-    double delta_max = CV_PI/12 + CV_PI/3;
-    double omega = CV_PI/4;
-    double phi = CV_PI/2;
-
-
-    cv::Mat camera_matrix = cv::Mat::eye(3, 3, CV_64FC1);
-
-    ros::NodeHandle nh_;
-    image_transport::ImageTransport it_;
-    image_transport::Subscriber image_sub;
-    paranomic panaromic;
-    arucoMarker estimate = arucoMarker(camera_matrix, phi, omega);
 };
