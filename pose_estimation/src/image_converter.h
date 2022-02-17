@@ -68,7 +68,7 @@ private :
     int img_counter = 1;
     std::vector<int> id = {0};
 
-    double marker_len = 0.15;
+    double marker_len = 0.10;
     double theta_min = CV_PI/2 + CV_PI/3;
     double theta_max = CV_PI/2 + 2*CV_PI/3;
     double delta_min = CV_PI/12;

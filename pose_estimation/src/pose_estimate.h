@@ -14,7 +14,7 @@ class arucoMarker
 private:
 
     cv::Mat distcoefs = cv::Mat::zeros(5, 1, CV_64FC1);
-    cv::Ptr<cv::aruco::Dictionary> Dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_250);
+    cv::Ptr<cv::aruco::Dictionary> Dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
 
     ros::NodeHandle nh;
     ros::Publisher pub;
@@ -30,6 +30,7 @@ private:
     double sqr_numbr = 6;        //number of squares in the marker
 
     cv::Mat camera_matrix;
+    tf::Matrix3x3 m;
 
 public:
 
@@ -50,6 +51,10 @@ public:
         std::vector<int> ids, ids_to_est;
         std::vector<std::vector<cv::Point2f>> corners, corners_to_est;
         std::vector<cv::Vec3d> rvecs, tvecs;
+
+        cp_x = c[0];
+        cp_y = c[1];
+        cp_z = c[2];
 
         int k = 0; //counter for the array of markers to estimate the pose
 
@@ -80,7 +85,7 @@ public:
                     perimeter = cv::arcLength(corners_to_est[i], true);
                     pixels_per_sqr = perimeter/sqr_numbr;
                     cv::aruco::drawAxis(new_image, camera_matrix, distcoefs, rvecs[i], tvecs[i], 0.1); //0.1 length of the drawn axis
-                    broadcast(rvecs[i], tvecs[i], c);
+                    broadcast(rvecs[i], tvecs[i]);
 
                     ROS_INFO_STREAM("Pixel density : " << pixels_per_sqr);
                 }
@@ -112,21 +117,18 @@ public:
             if (valid > 0)
             {
                 cv::aruco::drawAxis(new_image, camera_matrix, distcoefs, rvecs, tvecs, 0.1);
-                broadcast(rvecs, tvecs, c);
+                broadcast(rvecs, tvecs);
             }
         }
         return new_image;
     }
 
-    void broadcast(cv::Vec3d rvecs, cv::Vec3d tvecs, double c[3])
+    void broadcast(cv::Vec3d rvecs, cv::Vec3d tvecs)
     {
         static tf::TransformBroadcaster br;
         geometry_msgs::Pose pose;
 
         //transformation from the virtual camera frame to sensor frame
-        cp_x = c[0];
-        cp_y = c[1];
-        cp_z = c[2];
            
         x_pr = tvecs[0]/tvecs[2];
         y_pr = tvecs[1]/tvecs[2];
@@ -163,8 +165,8 @@ public:
         z = (z_y*z_y + z_x*z_x)*p_y/modz_y + z_z*p_z;
 
         transform.setOrigin(tf::Vector3(x, y, z));
-        q.setRPY(rvecs[0], rvecs[1], rvecs[2]);
-        q.normalize();
+        get_orientation(x, y, z, rvecs);
+        m.setRotation(q);
         transform.setRotation(q);
 
         pose.position.x = x;
@@ -179,6 +181,31 @@ public:
         pub.publish(pose);
 
         br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "fisheyed_camera", "fisheyed_marker_pred"));
+    }
+
+    void get_orientation(double x, double y, double z, cv::Vec3d rvec)
+    {
+        cv::Mat rot_mat = cv::Mat::zeros(3, 3, CV_64FC1);
+        //get the rotation matrix of the virtual camera ref frame
+
+        double cam_roll = asin(z/sqrt(y*y + z*z));
+        double cam_pitch = asin(z/sqrt(x*x + z*z));
+        double cam_yaw = asin(y/sqrt(x*x + y*y));
+
+        tf::Quaternion q;
+        q.setRPY(cam_roll, cam_pitch, cam_yaw);
+        q.normalize();
+
+        tf::Matrix3x3 cam_m(q);
+
+        //get the rotation matrix of the marker related to the virtual camera frame
+        cv::Rodrigues(rvec, rot_mat);
+
+        tf::Matrix3x3 rot_mat_(rot_mat.at<double>(0,0), rot_mat.at<double>(0,1), rot_mat.at<double>(0,2),
+                               rot_mat.at<double>(1,0), rot_mat.at<double>(1,1), rot_mat.at<double>(1,2),
+                               rot_mat.at<double>(2,0), rot_mat.at<double>(2,1), rot_mat.at<double>(2,2));
+
+        m = cam_m*rot_mat_;
     }
 };
 
