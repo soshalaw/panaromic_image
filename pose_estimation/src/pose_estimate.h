@@ -23,7 +23,7 @@ private:
     tf::Quaternion q;
 
     double x, y, z, cp_x, cp_y, cp_z, p_x, p_y, p_z, x_tr, y_tr, z_tr, x_pr, y_pr, z_pr, mod, modz_x, modz_y, modx, mody;
-    double x_, y_, z_, z_x, z_y, z_z, omega, phi;
+    double x_, y_, z_, z_x, z_y, z_z, z_1, y_1, x_1, omega, phi;
 
     double perimeter;      //perimeter of the marker in pixels
     double pixels_per_sqr;    // number of pixels in a square of the marker
@@ -95,34 +95,6 @@ public:
         return new_image;
     }
 
-    cv::Mat pose_board(cv::Mat image, double c[3])
-    {
-        cv::Mat new_image, grey_image;
-        image.copyTo(new_image);
-        cv::cvtColor(new_image, grey_image, cv::COLOR_BGR2GRAY);
-
-        cv::Ptr<cv::aruco::GridBoard> board = cv::aruco::GridBoard::create(2, 2, 0.04, 0.01, Dictionary);
-
-        std::vector<int> ids;
-        std::vector<std::vector<cv::Point2f>> corners;
-
-        cv::aruco::detectMarkers(grey_image, Dictionary, corners, ids);
-
-        if(ids.size() > 0)
-        {
-            cv::aruco::drawDetectedMarkers(new_image, corners, ids);
-            cv::Vec3d rvecs, tvecs;
-            int valid = cv::aruco::estimatePoseBoard(corners, ids, board, camera_matrix, distcoefs, rvecs, tvecs);
-
-            if (valid > 0)
-            {
-                cv::aruco::drawAxis(new_image, camera_matrix, distcoefs, rvecs, tvecs, 0.1);
-                broadcast(rvecs, tvecs);
-            }
-        }
-        return new_image;
-    }
-
     void broadcast(cv::Vec3d rvecs, cv::Vec3d tvecs)
     {
         static tf::TransformBroadcaster br;
@@ -151,11 +123,15 @@ public:
         p_y = y_*z_pr;
         p_z = z_*z_pr;
 
+        //transformation from sensor frame to camera frame
+
         if (omega == 0 & phi == 0)
         {
             x = p_x;
             y = p_y;
             z = p_z;
+
+            get_orientation(cp_x, cp_y, cp_z, rvecs);
         }else
         {
             z_x = sin(phi)*sin(omega);
@@ -168,15 +144,17 @@ public:
             x = -z_y*p_x/modz_x - z_x*z_z*p_y/modz_y + z_x*p_z;
             y = z_x*p_x/modz_x - z_y*z_z*p_y/modz_y + z_y*p_z;
             z = (z_y*z_y + z_x*z_x)*p_y/modz_y + z_z*p_z;
+
+            x_1 = -z_y*cp_x/modz_x - z_x*z_z*cp_y/modz_y + z_x*cp_z;
+            y_1 = z_x*cp_x/modz_x - z_y*z_z*cp_y/modz_y + z_y*cp_z;
+            z_1 = (z_y*z_y + z_x*z_x)*cp_y/modz_y + z_z*cp_z;
+
+            get_orientation(x_1, y_1, z_1, rvecs);
         }
-
-        //transformation from sensor frame to camera frame
-
 
 
         transform.setOrigin(tf::Vector3(x, y, z));
-        get_orientation(x, y, z, rvecs);
-        m.setRotation(q);
+        m.getRotation(q);
         transform.setRotation(q);
 
         pose.position.x = x;
@@ -198,9 +176,9 @@ public:
         cv::Mat rot_mat = cv::Mat::zeros(3, 3, CV_64FC1);
         //get the rotation matrix of the virtual camera ref frame
 
-        double cam_roll = asin(z/sqrt(y*y + z*z));
-        double cam_pitch = asin(z/sqrt(x*x + z*z));
-        double cam_yaw = asin(y/sqrt(x*x + y*y));
+        double cam_roll = acos(z/sqrt(y*y + z*z));
+        double cam_pitch = acos(z/sqrt(x*x + z*z));
+        double cam_yaw = acos(y/sqrt(x*x + y*y));
 
         tf::Quaternion q;
         q.setRPY(cam_roll, cam_pitch, cam_yaw);
@@ -214,6 +192,8 @@ public:
         tf::Matrix3x3 rot_mat_(rot_mat.at<double>(0,0), rot_mat.at<double>(0,1), rot_mat.at<double>(0,2),
                                rot_mat.at<double>(1,0), rot_mat.at<double>(1,1), rot_mat.at<double>(1,2),
                                rot_mat.at<double>(2,0), rot_mat.at<double>(2,1), rot_mat.at<double>(2,2));
+
+        ROS_INFO_STREAM( cam_roll << " " << cam_pitch << " " << cam_yaw);
 
         m = cam_m*rot_mat_;
     }
