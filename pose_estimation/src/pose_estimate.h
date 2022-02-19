@@ -151,18 +151,28 @@ public:
         p_y = y_*z_pr;
         p_z = z_*z_pr;
 
+        if (omega == 0 & phi == 0)
+        {
+            x = p_x;
+            y = p_y;
+            z = p_z;
+        }else
+        {
+            z_x = sin(phi)*sin(omega);
+            z_y = cos(phi)*sin(omega);
+            z_z = cos(omega);
+
+            modz_x = sqrt(z_y*z_y + z_x*z_x);
+            modz_y = sqrt((z_x*z_z)*(z_x*z_z) + (z_y*z_z)*(z_y*z_z) + (z_y*z_y + z_x*z_x)*(z_y*z_y + z_x*z_x));
+
+            x = -z_y*p_x/modz_x - z_x*z_z*p_y/modz_y + z_x*p_z;
+            y = z_x*p_x/modz_x - z_y*z_z*p_y/modz_y + z_y*p_z;
+            z = (z_y*z_y + z_x*z_x)*p_y/modz_y + z_z*p_z;
+        }
+
         //transformation from sensor frame to camera frame
 
-        z_x = sin(phi)*sin(omega);
-        z_y = cos(phi)*sin(omega);
-        z_z = cos(omega);
 
-        modz_x = sqrt(z_y*z_y + z_x*z_x);
-        modz_y = sqrt((z_x*z_z)*(z_x*z_z) + (z_y*z_z)*(z_y*z_z) + (z_y*z_y + z_x*z_x)*(z_y*z_y + z_x*z_x));
-
-        x = -z_y*p_x/modz_x - z_x*z_z*p_y/modz_y + z_x*p_z;
-        y = z_x*p_x/modz_x - z_y*z_z*p_y/modz_y + z_y*p_z;
-        z = (z_y*z_y + z_x*z_x)*p_y/modz_y + z_z*p_z;
 
         transform.setOrigin(tf::Vector3(x, y, z));
         get_orientation(x, y, z, rvecs);
