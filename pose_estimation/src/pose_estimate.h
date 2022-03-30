@@ -13,8 +13,7 @@ class arucoMarker
 
 private:
 
-    cv::Mat distcoefs = cv::Mat::zeros(5, 1, CV_64FC1);
-    cv::Ptr<cv::aruco::Dictionary> Dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_250);
+    cv::Ptr<cv::aruco::Dictionary> Dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
 
     ros::NodeHandle nh;
     ros::Publisher pub;
@@ -27,16 +26,18 @@ private:
 
     double perimeter;      //perimeter of the marker in pixels
     double pixels_per_sqr;    // number of pixels in a square of the marker
-    double sqr_numbr = 6;        //number of squares in the marker
+    double sqr_numbr = 5;        //number of squares in the marker
 
     cv::Mat camera_matrix;
+    cv::Mat distcoefs;
     tf::Matrix3x3 m;
 
 public:
 
-    arucoMarker(cv::Mat Camera_matrix, double Phi, double Omega)
+    arucoMarker(cv::Mat Camera_matrix, cv::Mat Distcoefs, double Phi, double Omega)
     {
         camera_matrix = Camera_matrix;
+        distcoefs = Distcoefs;
         pub = nh.advertise<geometry_msgs::Pose>("pose",1000);
         phi = Phi;
         omega = Omega;
@@ -87,7 +88,7 @@ public:
                     cv::aruco::drawAxis(new_image, camera_matrix, distcoefs, rvecs[i], tvecs[i], 0.1); //0.1 length of the drawn axis
                     broadcast(rvecs[i], tvecs[i]);
 
-                    ROS_INFO_STREAM("Pixel density : " << pixels_per_sqr);
+                   // ROS_INFO_STREAM("Pixel density : " << pixels_per_sqr);
                 }
             }          
         }
@@ -122,6 +123,10 @@ public:
         p_x = x_*z_pr;
         p_y = y_*z_pr;
         p_z = z_*z_pr;
+
+        /*p_x = x_tr;
+        p_y = y_tr;
+        p_z = z_tr;*/
 
         //transformation from sensor frame to camera frame
 
@@ -192,8 +197,6 @@ public:
         tf::Matrix3x3 rot_mat_(rot_mat.at<double>(0,0), rot_mat.at<double>(0,1), rot_mat.at<double>(0,2),
                                rot_mat.at<double>(1,0), rot_mat.at<double>(1,1), rot_mat.at<double>(1,2),
                                rot_mat.at<double>(2,0), rot_mat.at<double>(2,1), rot_mat.at<double>(2,2));
-
-        ROS_INFO_STREAM( cam_roll << " " << cam_pitch << " " << cam_yaw);
 
         m = cam_m*rot_mat_;
     }

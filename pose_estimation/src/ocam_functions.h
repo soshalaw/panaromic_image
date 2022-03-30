@@ -1,14 +1,9 @@
-/*------------------------------------------------------------------------------
-   Example code that shows the use of the 'cam2world" and 'world2cam" functions
-   Shows also how to undistort images into perspective or panoramic images
-   Copyright (C) 2008 DAVIDE SCARAMUZZA, ETH Zurich  
-   Author: Davide Scaramuzza - email: davide.scaramuzza@ieee.org
-------------------------------------------------------------------------------*/
 
 #include "math.h"
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include <opencv2/core.hpp>
+#include <ros/ros.h>
 
 class paranomic
 {
@@ -23,8 +18,8 @@ private:
     double cp_x, cp_y, cp_z, modx, mody;
 
     //calibration data camera 01
-    std::vector<double> invpol = {30.364412352854853, -3.216125170265028e+02, 1.011157924643074e+03, -1.329459542593791e+03, 5.996469483656527e+02, -9.461934542026725e+02, 1.612818112529816e+03};
-    std::vector<double> pol = {1.176204359990972e+03 ,0 ,-4.354667396772434e-04 ,2.203647236497771e-07 ,-1.506561627138972e-10};
+    std::vector<double> invpol = {-1.075233654325322e+02, 4.704007234612547e+02, -7.039759405818603e+02, 2.838316240089585e+02, -9.038676504203400e+02, 1.606691263137671e+03};
+    std::vector<double> pol = {1.145882288545091e+03 ,0 ,-3.630427146836845e-04 ,1.047936476714481e-07 ,-1.000973064316358e-10};
     double yc = 1.307765250016426e+03;
     double xc = 1.647330746606595e+03;
 
@@ -32,12 +27,13 @@ private:
     double d = 0;
     double e = 0;
 
-    int H_res = 512; // length of the output image
+    int H_res = 1024; // length of the output image
 
     double pixel_length = 0.0014;  //length of a pixel in mm extracted from the camera specs
     double foc_len = pol[0]*pixel_length;
 
     int mode = 0;
+    int mode2 = 0;
 
 public:
 
@@ -81,14 +77,13 @@ public:
 
     cv::Mat slice(cv::Mat M, double c[3], double theta_min, double theta_max, double delta_min, double delta_max)
     {
-
         double alpha = theta_max - theta_min;
 
         double gamma = delta_max - delta_min;
 
         double theta = 0;
 
-        int V_res = tan(gamma/2)*H_res/tan(alpha/2);     
+        int V_res = tan(gamma/2)*H_res/tan(alpha/2);
 
         img.create(V_res, H_res,M.type());
         ImgPointsx.create(img.size(), CV_32FC1);
@@ -105,7 +100,6 @@ public:
             c[1] = cp_y = cos(delta_min + (gamma)/2);
             c[2] = cp_z = cos(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
         }
-
 
         modx = sqrt(cp_y*cp_y + cp_x*cp_x);
         mody = sqrt((cp_x*cp_z)*(cp_x*cp_z) + (cp_y*cp_z)*(cp_y*cp_z) + (cp_y*cp_y + cp_x*cp_x)*(cp_y*cp_y + cp_x*cp_x));
@@ -178,7 +172,7 @@ public:
         return img;
     }
 
-    void def_camera_matrix(cv::Mat camera_matrix, double theta_min, double theta_max, double delta_min, double delta_max)
+    void def_camera_matrix(cv::Mat camera_matrix, cv::Mat distcoefs, double theta_min, double theta_max, double delta_min, double delta_max)
     {
         double alpha = theta_max - theta_min;
         double gamma = delta_max - delta_min;
@@ -194,12 +188,57 @@ public:
         double c_y = foc_len*(gamma/2);
         double c_x = foc_len*(alpha/2);
 
-        camera_matrix.at<double>(0,0) = foc_len/pixel_width_new;
-        camera_matrix.at<double>(0,2) = c_x/pixel_width_new;
-        camera_matrix.at<double>(1,1) = foc_len/pixel_width_new;
-        camera_matrix.at<double>(1,2) = c_y/pixel_width_new;
+        if( mode2 == 0)
+        {
+            camera_matrix.at<double>(0,0) = foc_len/pixel_len_new;
+            camera_matrix.at<double>(0,2) = c_x/pixel_len_new;
+            camera_matrix.at<double>(1,1) = foc_len/pixel_width_new;
+            camera_matrix.at<double>(1,2) = c_y/pixel_width_new;
+        }else
+        {
+            /*camera_matrix.at<double>(0,0) = 1306.59803885803;
+            camera_matrix.at<double>(0,2) = 526.829987806867;
+            camera_matrix.at<double>(1,1) = 1274.82228247243;
+            camera_matrix.at<double>(1,2) = -88.01602586847;
+
+            distcoefs.at<double>(0,0) = 0.4338;
+            distcoefs.at<double>(1,0) = -0.7952;
+            distcoefs.at<double>(2,0) = -0.1089;
+            distcoefs.at<double>(3,0) = 0.0088;
+            distcoefs.at<double>(4,0) = 0.4682;*/
+
+            camera_matrix.at<double>(0,0) = 489.2093;
+            camera_matrix.at<double>(0,2) = 250.5876;
+            camera_matrix.at<double>(1,1) = 491.6049;
+            camera_matrix.at<double>(1,2) = 203.6294;
+
+            distcoefs.at<double>(0,0) = -0.0239;
+            distcoefs.at<double>(1,0) = 0.2316;
+            distcoefs.at<double>(2,0) = -0.0125;
+            distcoefs.at<double>(3,0) = 0.0023;
+            distcoefs.at<double>(4,0) = -0.4058;
+
+            /*camera_matrix.at<double>(0,0) = 679.1053;
+            camera_matrix.at<double>(0,2) = 256.1434;
+            camera_matrix.at<double>(1,1) = 663.9435;
+            camera_matrix.at<double>(1,2) = -72.5388;
+
+            distcoefs.at<double>(0,0) = 0.4362;
+            distcoefs.at<double>(1,0) = -0.5421;
+            distcoefs.at<double>(2,0) = -0.1284;
+            distcoefs.at<double>(3,0) = 0.0061;
+            distcoefs.at<double>(4,0) = 0.2274;*/
+
+            /*camera_matrix.at<double>(0,0) = 1012.114;
+            camera_matrix.at<double>(0,2) = 383.049;
+            camera_matrix.at<double>(1,1) = 1008.9362;
+            camera_matrix.at<double>(1,2) = 252.0472;
+
+            distcoefs.at<double>(0,0) = -1.3484;
+            distcoefs.at<double>(1,0) = 19.9207;
+            distcoefs.at<double>(2,0) = -0.0028;
+            distcoefs.at<double>(3,0) = -0.0006;
+            distcoefs.at<double>(4,0) = -90.51;*/
+        }
     }
 };
-//------------------------------------------------------------------------------
-
-//------------------------------------------------------------------------------

@@ -18,22 +18,22 @@ private :
     int img_counter = 1;
     std::vector<int> id = {0};
 
-    double marker_len = 0.10;
-    double theta_min = - CV_PI/6;
-    double theta_max = CV_PI/6;
+    double marker_len = 0.2;
+    double theta_min =  -CV_PI/6;
+    double theta_max =  CV_PI/6;
     double delta_min = CV_PI/2 + CV_PI/8;
-    double delta_max = CV_PI/2 + CV_PI/8 + CV_PI/4;
+    double delta_max = CV_PI/2 + 3*CV_PI/8;
     double omega = CV_PI/4;
     double phi = CV_PI/2;
 
-
     cv::Mat camera_matrix = cv::Mat::eye(3, 3, CV_64FC1);
+    cv::Mat distcoefs = cv::Mat::zeros(5, 1, CV_64FC1);
 
     ros::NodeHandle nh_;
     image_transport::ImageTransport it_;
-    image_transport::Subscriber image_sub;
+    image_transport::Subscriber image_sub, omega_sub;
     paranomic panaromic;
-    arucoMarker estimate = arucoMarker(camera_matrix, phi, omega);
+    arucoMarker estimate = arucoMarker(camera_matrix, distcoefs, phi, omega);
 
 public:
 
@@ -54,6 +54,8 @@ public:
         cv::Mat frame;
         cv_bridge::CvImagePtr cv_ptr;
 
+        ROS_INFO_STREAM(omega);
+
         try
         {
             cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
@@ -68,7 +70,7 @@ public:
 
         frame = panaromic.slice(img, c, theta_min, theta_max, delta_min, delta_max);
 
-        panaromic.def_camera_matrix(camera_matrix, theta_min, theta_max, delta_min, delta_max);
+        panaromic.def_camera_matrix(camera_matrix, distcoefs, theta_min, theta_max, delta_min, delta_max);
 
         new_image = estimate.pose_marker(frame, c, id, marker_len);
 
@@ -78,10 +80,9 @@ public:
 
         if (k%256 == 32)
         {
-            std::string name = "/home/tue-me-minicar-laptop-02/internship/camera_calibration/camera_01/validation_/validation_23/open_cv_img" + std::to_string(img_counter) + ".png" ;
+            std::string name = "/home/tue-me-minicar-laptop-02/internship/camera_calibration/camera_01/validation_/validation_9/open_cv_img" + std::to_string(img_counter) + ".png" ;
             cv::imwrite(name, new_image);
             img_counter++;
         }
-
     }
 };
