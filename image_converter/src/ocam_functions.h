@@ -12,94 +12,39 @@
 
 class paranomic
 {
+
+private:
+    cv::Mat img, ImgPointsx, ImgPointsy;  // definition of matrices for the output image and remapping
+
+    double x, y, z, cos_alpha, x_, y_, z_;
+    double planer_coords[3];
+    double cyl_coords[3];
+    double points2D[2];
+    double cp_x, cp_y, cp_z, modx, mody;
+
+    //calibration data camera 01
+    std::vector<double> invpol = {-1.075233654325322e+02, 4.704007234612547e+02, -7.039759405818603e+02, 2.838316240089585e+02, -9.038676504203400e+02, 1.606691263137671e+03};
+    std::vector<double> pol = {1.145882288545091e+03 ,0 ,-3.630427146836845e-04 ,1.047936476714481e-07 ,-1.000973064316358e-10};
+    double yc = 1.307765250016426e+03;
+    double xc = 1.647330746606595e+03;
+
+    double c = 1;
+    double d = 0;
+    double e = 0;
+
+    int H_res = 1024; // length of the output image
+
+    double pixel_length = 0.0014;  //length of a pixel in mm extracted from the camera specs
+    double foc_len = pol[0]*pixel_length;
+
+    int mode = 0;
+    int mode2 = 0;
+
 public:
 
     paranomic() {
     }
 
-    //data for camera 01
-    double invpol[6] = {-1.075233654325322e+02, 4.704007234612547e+02, -7.039759405818603e+02, 2.838316240089585e+02, -9.038676504203400e+02, 1.606691263137671e+03};
-    double pol[5] = {1.145882288545091e+03, 0, -3.630427146836845e-04, 1.047936476714481e-07, -1.000973064316358e-10};
-    double yc = 1.297517959278643e+03;
-    double xc = 1.644502300542033e+03;
-
-    //Data for camera 02
-    /*double invpol[6] = {-59.8538531950175, 263.398458104873, -408.489996098848, 207.474586622926, -315.138138042516, 531.800061327281};
-    double pol[5] = {391.907107188337, 0 -0.00122581421780381, 1.66113248106314e-06, -3.95801361798808e-09};
-    double yc = 428.751415334770;
-    double xc = 520.061031981158;*/
-
-    double c = 1;
-    double d = 0;
-    double e = 0;
-    double width = 2448;
-    double length = 3264;
-
-    /*int get_ocam_model(struct ocam_model *myocam_model, char *filename)
-    {
-     double *pol        = myocam_model->pol;
-     double *invpol     = myocam_model->invpol;
-     double *xc         = &(myocam_model->xc);
-     double *yc         = &(myocam_model->yc);
-     double *c          = &(myocam_model->c);
-     double *d          = &(myocam_model->d);
-     double *e          = &(myocam_model->e);
-     int    *width      = &(myocam_model->width);
-     int    *height     = &(myocam_model->height);
-     int *length_pol    = &(myocam_model->length_pol);
-     int *length_invpol = &(myocam_model->length_invpol);
-     FILE *f;
-     char buf[CMV_MAX_BUF];
-     int i;
-
-     //Open file
-     if(!(f=fopen(filename,"r")))
-     {
-       printf("File %s cannot be opened\n", filename);
-       return -1;
-     }
-
-     //Read polynomial coefficients
-     fgets(buf,CMV_MAX_BUF,f);
-     fscanf(f,"\n");
-     fscanf(f,"%d", length_pol);
-     for (i = 0; i < *length_pol; i++)
-     {
-         fscanf(f," %lf",&pol[i]);
-     }
-
-     //Read inverse polynomial coefficients
-     fscanf(f,"\n");
-     fgets(buf,CMV_MAX_BUF,f);
-     fscanf(f,"\n");
-     fscanf(f,"%d", length_invpol);
-     for (i = 0; i < *length_invpol; i++)
-     {
-         fscanf(f," %lf",&invpol[i]);
-     }
-
-     //Read center coordinates
-     fscanf(f,"\n");
-     fgets(buf,CMV_MAX_BUF,f);
-     fscanf(f,"\n");
-     fscanf(f,"%lf %lf\n", xc, yc);
-
-     //Read affine coefficients
-     fgets(buf,CMV_MAX_BUF,f);
-     fscanf(f,"\n");
-     fscanf(f,"%lf %lf %lf\n", c,d,e);
-
-     //Read image size
-     fgets(buf,CMV_MAX_BUF,f);
-     fscanf(f,"\n");
-     fscanf(f,"%d %d", height, width);
-
-     fclose(f);
-     return 0;
-    }*/
-
-
-    //------------------------------------------------------------------------------
     void world2cam(double point2D[2], double point3D[3])
     {
      double norm        = sqrt(point3D[0]*point3D[0] + point3D[1]*point3D[1]);
@@ -134,18 +79,11 @@ public:
         point2D[0] = xc;
         point2D[1] = yc;
       }
-
     }
 
-    cv::Mat slice(cv::Mat M)
+    cv::Mat slice(cv::Mat M, double c[3], double theta_min, double theta_max, double delta_min, double delta_max)
     {
-        double theta_min = CV_PI/3;
-        double theta_max = CV_PI/3 + CV_PI/3;
-
         double alpha = theta_max - theta_min;
-
-        double delta_min = CV_PI/4;
-        double delta_max = CV_PI/2;
 
         double gamma = delta_max - delta_min;
 
@@ -157,9 +95,20 @@ public:
         ImgPointsx.create(img.size(), CV_32FC1);
         ImgPointsy.create(img.size(), CV_32FC1);
 
-        cp_x = sin(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
-        cp_y = cos(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
-        cp_z = cos(delta_min + (gamma)/2);
+        if (mode == 1)
+        {
+            c[0] = cp_x = sin(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
+            c[1] = cp_y = cos(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
+            c[2] = cp_z = cos(delta_min + (gamma)/2);
+        }else
+        {
+            c[0] = cp_x = sin(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
+            c[1] = cp_y = cos(delta_min + (gamma)/2);
+            c[2] = cp_z = cos(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
+        }
+
+        modx = sqrt(cp_y*cp_y + cp_x*cp_x);
+        mody = sqrt((cp_x*cp_z)*(cp_x*cp_z) + (cp_y*cp_z)*(cp_y*cp_z) + (cp_y*cp_y + cp_x*cp_x)*(cp_y*cp_y + cp_x*cp_x));
 
         for(int i = 0 ; i < V_res; i++)
         {
@@ -167,26 +116,21 @@ public:
 
             for(int j = 0; j < H_res; j++)
             {
-                x_ = - tan(alpha/2) + j*2*tan(alpha/2)/H_res;
+                x_ = -tan(alpha/2) + j*2*tan(alpha/2)/H_res;
 
-                /*x = -cp_y*x_ - cp_x*cp_z*y_ + cp_x;
-                y = cp_x*x_ - cp_y*cp_z*y_ + cp_y;
-                z = -(-cp_y*cp_y - cp_x*cp_x)*y_ + cp_z;*/
+                x = cp_y*x_/modx + cp_x*cp_z*y_/mody + cp_x;
+                y = -cp_x*x_/modx + cp_y*cp_z*y_/mody + cp_y;
+                z = -(cp_y*cp_y + cp_x*cp_x)*y_/mody + cp_z;
 
-                x = cp_y*x_ + cp_x*cp_z*y_ + cp_x;
-                y = -cp_x*x_ + cp_y*cp_z*y_ + cp_y;
-                z = -(cp_y*cp_y + cp_x*cp_x)*y_ + cp_z;
-
-                planer_coords[0] = x/sqrt(x*x + y*y + z*z);
-                planer_coords[1] = y/sqrt(x*x + y*y + z*z);
-                planer_coords[2] = z/sqrt(x*x + y*y + z*z);
+                planer_coords[0] = x/sqrt(pow(x,2) + pow(y,2) + pow(z,2));
+                planer_coords[1] = y/sqrt(pow(x,2) + pow(y,2) + pow(z,2));
+                planer_coords[2] = z/sqrt(pow(x,2) + pow(y,2) + pow(z,2));
 
                 world2cam(points2D, planer_coords);
 
                 ImgPointsx.at<float>(i,j) = points2D[0];
                 ImgPointsy.at<float>(i,j) = points2D[1];
             }
-
         }
 
         cv::remap(M, img, ImgPointsx, ImgPointsy, 1);
@@ -196,7 +140,6 @@ public:
 
     cv::Mat panaroma(cv::Mat M)
     {
-
         double theta_min = 0;
         double theta_max = CV_PI*2;
 
@@ -229,27 +172,11 @@ public:
                 ImgPointsx.at<double>(i,j) = points2D[0];
                 ImgPointsy.at<double>(i,j) = points2D[1];
             }
-
         }
 
         cv::remap(M, img, ImgPointsx, ImgPointsy, 1);
         return img;
     }
-
-    private:
-        cv::Mat img, ImgPointsx, ImgPointsy;  // definition of matrices for the output image and remapping
-        double x, y, z, cos_alpha, x_, y_, z_;
-        int H_res = 1024/2; // length of the output image
-
-        double planer_coords[3];
-
-        double cyl_coords[3];
-
-        double points2D[2];
-
-        double p11, p12, p13, p21, p22, p23, p31, p32, p33;
-
-        double cp_x, cp_y, cp_z;
 
 };
 //------------------------------------------------------------------------------

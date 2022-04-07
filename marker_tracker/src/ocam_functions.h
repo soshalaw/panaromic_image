@@ -196,6 +196,7 @@ public:
             camera_matrix.at<double>(1,2) = c_y/pixel_width_new;
         }else
         {
+
             camera_matrix.at<double>(0,0) = 489.2093;
             camera_matrix.at<double>(0,2) = 250.5876;
             camera_matrix.at<double>(1,1) = 491.6049;
@@ -205,7 +206,8 @@ public:
             distcoefs.at<double>(1,0) = 0.2316;
             distcoefs.at<double>(2,0) = -0.0125;
             distcoefs.at<double>(3,0) = 0.0023;
-            distcoefs.at<double>(4,0) = -0.4058;    
-        }
+            distcoefs.at<double>(4,0) = -0.4058;
+
+         }
     }
 };
