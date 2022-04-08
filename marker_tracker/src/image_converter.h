@@ -14,7 +14,7 @@ class bridge
 
 private :
     cv::Mat img, new_image, resized_image;
-    double c[3];
+    std::array<double,3>  c;
     int img_counter = 1;
     std::vector<int> id = {0};
 

@@ -43,7 +43,7 @@ public:
         omega = Omega;
     }
 
-    cv::Mat pose_marker(cv::Mat image, double c[3], std::vector<int> id, double marker_len)
+    cv::Mat pose_marker(cv::Mat image, std::array<double,3> c, std::vector<int> id, double marker_len)
     {
         cv::Mat new_image, gray_img;
         image.copyTo(new_image);
@@ -53,9 +53,9 @@ public:
         std::vector<std::vector<cv::Point2f>> corners, corners_to_est;
         std::vector<cv::Vec3d> rvecs, tvecs;
 
-        cp_x = c[0];
-        cp_y = c[1];
-        cp_z = c[2];
+        cp_x = c.at(0);
+        cp_y = c.at(1);
+        cp_z = c.at(2);
 
         int k = 0; //counter for the array of markers to estimate the pose
 
@@ -83,12 +83,8 @@ public:
 
                 for (int i = 0; i < ids_to_est.size(); i++ )
                 {
-                    perimeter = cv::arcLength(corners_to_est[i], true);
-                    pixels_per_sqr = perimeter/sqr_numbr;
                     cv::aruco::drawAxis(new_image, camera_matrix, distcoefs, rvecs[i], tvecs[i], 0.1); //0.1 length of the drawn axis
-                    broadcast(rvecs[i], tvecs[i]);
-
-                   // ROS_INFO_STREAM("Pixel density : " << pixels_per_sqr);
+                    c = broadcast(rvecs[i], tvecs[i]);
                 }
             }
         }
@@ -96,21 +92,22 @@ public:
         return new_image;
     }
 
-    void broadcast(cv::Vec3d rvecs, cv::Vec3d tvecs)
+    std::array<double,3> broadcast(cv::Vec3d rvecs, cv::Vec3d tvecs)
     {
         static tf::TransformBroadcaster br;
         geometry_msgs::Pose pose;
+        std::array<double,3> c;
 
         transform_v2cam(rvecs, tvecs);
-        transform_cam2body();
+        transform_cam2body(rvecs);
 
         transform.setOrigin(tf::Vector3(x, y, z));
         m.getRotation(q);
         transform.setRotation(q);
 
-        pose.position.x = x;
-        pose.position.y = y;
-        pose.position.z = z;
+        pose.position.x = c.at(0) = x;
+        pose.position.y = c.at(1) = y;
+        pose.position.z = c.at(2) = z;
 
         pose.orientation.x = q[0];
         pose.orientation.y = q[1];
@@ -120,9 +117,11 @@ public:
         pub.publish(pose);
 
         br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "fisheyed_camera", "fisheyed_marker_pred"));
+
+        return c;
     }
 
-    transform_v2cam(cv::Vec3d rvecs, cv::Vec3d tvecs)
+    void transform_v2cam(cv::Vec3d rvecs, cv::Vec3d tvecs)
     {
 
         //transformation from the virtual camera frame to sensor frame
@@ -153,7 +152,7 @@ public:
         p_z = z_tr;*/
     }
 
-    transform_cam2body()
+    void transform_cam2body(cv::Vec3d rvecs)
     {
         //transformation from sensor frame to camera frame
 

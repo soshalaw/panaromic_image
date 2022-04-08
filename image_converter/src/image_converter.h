@@ -11,17 +11,28 @@ static const std::string OPENCV_WINDOW = "Image window";
 
 class bridge
 {
-        ros::NodeHandle nh_;
-        image_transport::ImageTransport it_;
-        image_transport::Subscriber image_sub;
-        arucoMarker estimate;
+
+private :
+    cv::Mat img, new_image, resized_image;
+    double c[3];
+    int img_counter = 1;
+    std::vector<int> id = {0};
+
+    double theta_min =  -CV_PI/6;
+    double theta_max =  CV_PI/6;
+    double delta_min = CV_PI/2 + CV_PI/8;
+    double delta_max = CV_PI/2 + 3*CV_PI/8;
+    double omega = CV_PI/4;
+    double phi = CV_PI/2;
+
+
+    ros::NodeHandle nh_;
+    image_transport::ImageTransport it_;
+    image_transport::Subscriber image_sub, omega_sub;
+    paranomic panaromic;
 
 public:
 
-        cv::Mat img, new_image, resized_image;
-        int l = 1;
-        double c[3];
-        
     bridge()
     : it_(nh_)
     {
@@ -38,7 +49,8 @@ public:
     {
         cv::Mat frame;
         cv_bridge::CvImagePtr cv_ptr;
-        paranomic panaromic;
+
+        ROS_INFO_STREAM(omega);
 
         try
         {
@@ -52,26 +64,17 @@ public:
 
         img = cv_ptr->image;
 
-        frame = panaromic.slice(img);
+        frame = panaromic.slice(img, c, theta_min, theta_max, delta_min, delta_max);
 
-        new_image = estimate.pose(frame);
-
-        double width = new_image.size().width;
-        double height = new_image.size().height;
-
-        cv::resize(img, resized_image, cv::Size(width*1.5, height*1.5));
-
-        cv::imshow(OPENCV_WINDOW, resized_image);
+        cv::imshow(OPENCV_WINDOW, new_image);
 
         int k = cv::waitKey(1);
 
         if (k%256 == 32)
         {
-            std::string str = "/home/soshala/internship/camera_calibration/camera_02/data1/opencv_frame_" +std::to_string(l)+ ".png";
-            cv::imwrite(str,img);
-            l++;
+            std::string name = "/home/tue-me-minicar-laptop-02/internship/camera_calibration/camera_01/validation_/validation_9/open_cv_img" + std::to_string(img_counter) + ".png" ;
+            cv::imwrite(name, new_image);
+            img_counter++;
         }
-
     }
-
 };

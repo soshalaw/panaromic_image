@@ -15,6 +15,7 @@ private:
 
     ros::NodeHandle nh;
     ros::Publisher pub;
+    cv::Mat gray_image, new_image;
 
 public:
 
@@ -28,7 +29,7 @@ public:
         std::vector<int> ids;
         std::vector<std::vector<cv::Point2f>> corners;
 
-        cv::aruco::detectMarkers(gray_image, Dictionary, corners, ids, parameters, rejected_corners);
+        cv::aruco::detectMarkers(gray_image, Dictionary, corners, ids);
 
         if (ids.size() > 0)
         {

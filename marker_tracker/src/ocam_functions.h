@@ -27,7 +27,7 @@ private:
     double d = 0;
     double e = 0;
 
-    int H_res = 1024; // length of the output image
+    int H_res = 512; // length of the output image
 
     double pixel_length = 0.0014;  //length of a pixel in mm extracted from the camera specs
     double foc_len = pol[0]*pixel_length;
@@ -75,7 +75,7 @@ public:
       }
     }
 
-    cv::Mat slice(cv::Mat M, double c[3], double theta_min, double theta_max, double delta_min, double delta_max)
+    cv::Mat slice(cv::Mat M, std::array<double,3> c, double theta_min, double theta_max, double delta_min, double delta_max)
     {
         double alpha = theta_max - theta_min;
 
@@ -91,14 +91,21 @@ public:
 
         if (mode == 1)
         {
-            c[0] = cp_x = sin(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
-            c[1] = cp_y = cos(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
-            c[2] = cp_z = cos(delta_min + (gamma)/2);
+            cp_x = sin(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
+            cp_y = cos(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
+            cp_z = cos(delta_min + (gamma)/2);
         }else
         {
-            c[0] = cp_x = sin(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
-            c[1] = cp_y = cos(delta_min + (gamma)/2);
-            c[2] = cp_z = cos(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
+            cp_x = sin(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
+            cp_y = cos(delta_min + (gamma)/2);
+            cp_z = cos(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
+        }
+
+        if(c.empty())
+        {
+            c.at(0) = cp_x;
+            c.at(1) = cp_y;
+            c.at(2) = cp_z;
         }
 
         modx = sqrt(cp_y*cp_y + cp_x*cp_x);

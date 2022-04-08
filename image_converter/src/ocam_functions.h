@@ -34,11 +34,7 @@ private:
 
     int H_res = 1024; // length of the output image
 
-    double pixel_length = 0.0014;  //length of a pixel in mm extracted from the camera specs
-    double foc_len = pol[0]*pixel_length;
-
     int mode = 0;
-    int mode2 = 0;
 
 public:
 
@@ -179,6 +175,4 @@ public:
     }
 
 };
-//------------------------------------------------------------------------------
 
-//------------------------------------------------------------------------------
