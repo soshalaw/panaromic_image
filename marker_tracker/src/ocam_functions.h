@@ -75,7 +75,7 @@ public:
       }
     }
 
-    cv::Mat slice(cv::Mat M, std::array<double,3> c, double theta_min, double theta_max, double delta_min, double delta_max)
+    cv::Mat slice(cv::Mat M, std::array<double,3> &c, double theta_min, double theta_max, double delta_min, double delta_max)
     {
         double alpha = theta_max - theta_min;
 
@@ -91,22 +91,22 @@ public:
 
         if (mode == 1)
         {
-            cp_x = sin(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
-            cp_y = cos(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
-            cp_z = cos(delta_min + (gamma)/2);
+            cp_x = c.at(0) = sin(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
+            cp_y = c.at(1) = cos(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
+            cp_z = c.at(2) = cos(delta_min + (gamma)/2);
         }else
         {
-            cp_x = sin(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
-            cp_y = cos(delta_min + (gamma)/2);
-            cp_z = cos(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
+            cp_x = c.at(0) = sin(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
+            cp_y = c.at(1) = cos(delta_min + (gamma)/2);
+            cp_z = c.at(2) = cos(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
         }
 
-        if(c.empty())
+        /*if(c.empty())
         {
             c.at(0) = cp_x;
             c.at(1) = cp_y;
             c.at(2) = cp_z;
-        }
+        }*/
 
         modx = sqrt(cp_y*cp_y + cp_x*cp_x);
         mody = sqrt((cp_x*cp_z)*(cp_x*cp_z) + (cp_y*cp_z)*(cp_y*cp_z) + (cp_y*cp_y + cp_x*cp_x)*(cp_y*cp_y + cp_x*cp_x));

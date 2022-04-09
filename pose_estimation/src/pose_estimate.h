@@ -1,6 +1,7 @@
 #ifndef POSE_ESTIMATE_H
 #define POSE_ESTIMATE_H
 
+#include <array>
 #include <opencv2/aruco.hpp>
 #include <opencv2/core.hpp>
 #include <opencv2/opencv.hpp>
@@ -43,7 +44,7 @@ public:
         omega = Omega;
     }
 
-    cv::Mat pose_marker(cv::Mat image, double c[3], std::vector<int> id, double marker_len)
+    cv::Mat pose_marker(cv::Mat image, std::array<double, 3> c, std::vector<int> id, double marker_len)
     {
         cv::Mat new_image, gray_img;
         image.copyTo(new_image);

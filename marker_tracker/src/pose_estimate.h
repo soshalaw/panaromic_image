@@ -32,7 +32,10 @@ private:
     cv::Mat distcoefs;
     tf::Matrix3x3 m;
 
+
 public:
+
+    std::array<double,3> c_new;
 
     arucoMarker(cv::Mat Camera_matrix, cv::Mat Distcoefs, double Phi, double Omega)
     {
@@ -84,30 +87,28 @@ public:
                 for (int i = 0; i < ids_to_est.size(); i++ )
                 {
                     cv::aruco::drawAxis(new_image, camera_matrix, distcoefs, rvecs[i], tvecs[i], 0.1); //0.1 length of the drawn axis
-                    c = broadcast(rvecs[i], tvecs[i]);
-                }
+                    transform_v2cam(rvecs[i], tvecs[i]);
+                    transform_cam2body(rvecs[i]);
+                    broadcast();
+                }           
             }
         }
 
         return new_image;
     }
 
-    std::array<double,3> broadcast(cv::Vec3d rvecs, cv::Vec3d tvecs)
+    void broadcast()
     {
         static tf::TransformBroadcaster br;
         geometry_msgs::Pose pose;
-        std::array<double,3> c;
-
-        transform_v2cam(rvecs, tvecs);
-        transform_cam2body(rvecs);
 
         transform.setOrigin(tf::Vector3(x, y, z));
         m.getRotation(q);
         transform.setRotation(q);
 
-        pose.position.x = c.at(0) = x;
-        pose.position.y = c.at(1) = y;
-        pose.position.z = c.at(2) = z;
+        pose.position.x = x;
+        pose.position.y = y;
+        pose.position.z = z;
 
         pose.orientation.x = q[0];
         pose.orientation.y = q[1];
@@ -118,7 +119,6 @@ public:
 
         br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "fisheyed_camera", "fisheyed_marker_pred"));
 
-        return c;
     }
 
     void transform_v2cam(cv::Vec3d rvecs, cv::Vec3d tvecs)
@@ -139,13 +139,15 @@ public:
 
         mod = sqrt(x_tr*x_tr + y_tr*y_tr + z_tr*z_tr);
 
-        x_ = x_tr/mod;
-        y_ = y_tr/mod;
-        z_ = z_tr/mod;
+        x_ = c_new.at(0) = x_tr/mod;
+        y_ = c_new.at(1) = y_tr/mod;
+        z_ = c_new.at(2) = z_tr/mod;
 
         p_x = x_*z_pr;
         p_y = y_*z_pr;
         p_z = z_*z_pr;
+
+        std::cout << x_tr << std::endl;
 
         /*p_x = x_tr;
         p_y = y_tr;

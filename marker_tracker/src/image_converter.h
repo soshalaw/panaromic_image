@@ -23,8 +23,8 @@ private :
     double theta_max =  CV_PI/6;
     double delta_min = CV_PI/2 + CV_PI/8;
     double delta_max = CV_PI/2 + 3*CV_PI/8;
-    double omega = CV_PI/4;
-    double phi = CV_PI/2;
+    double omega = 0;
+    double phi = 0;
 
     cv::Mat camera_matrix = cv::Mat::eye(3, 3, CV_64FC1);
     cv::Mat distcoefs = cv::Mat::zeros(5, 1, CV_64FC1);
@@ -76,13 +76,8 @@ public:
 
         cv::imshow(OPENCV_WINDOW, new_image);
 
-        int k = cv::waitKey(1);
+        //c = estimate.c_new;
 
-        if (k%256 == 32)
-        {
-            std::string name = "/home/tue-me-minicar-laptop-02/internship/camera_calibration/camera_01/validation_/validation_9/open_cv_img" + std::to_string(img_counter) + ".png" ;
-            cv::imwrite(name, new_image);
-            img_counter++;
-        }
+        int k = cv::waitKey(1);
     }
 };

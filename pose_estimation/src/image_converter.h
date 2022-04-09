@@ -1,3 +1,5 @@
+
+#include <array>
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
@@ -14,7 +16,7 @@ class bridge
 
 private :
     cv::Mat img, new_image, resized_image;
-    double c[3];
+    std::array<double,3> c;
     int img_counter = 1;
     std::vector<int> id = {0};
 
