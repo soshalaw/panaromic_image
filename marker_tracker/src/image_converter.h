@@ -14,7 +14,7 @@ class bridge
 
 private :
     cv::Mat img, new_image, resized_image;
-    std::array<double,3>  c;
+    std::array<double,3>  c, c_new;
     int img_counter = 1;
     std::vector<int> id = {0};
 
@@ -25,6 +25,7 @@ private :
     double delta_max = CV_PI/2 + 3*CV_PI/8;
     double omega = 0;
     double phi = 0;
+    double fps;
 
     cv::Mat camera_matrix = cv::Mat::eye(3, 3, CV_64FC1);
     cv::Mat distcoefs = cv::Mat::zeros(5, 1, CV_64FC1);
@@ -68,15 +69,15 @@ public:
 
         img = cv_ptr->image;
 
-        frame = panaromic.slice(img, c, theta_min, theta_max, delta_min, delta_max);
+        frame = panaromic.slice(img, c, c_new, fps, theta_min, theta_max, delta_min, delta_max);
 
         panaromic.def_camera_matrix(camera_matrix, distcoefs, theta_min, theta_max, delta_min, delta_max);
 
-        new_image = estimate.pose_marker(frame, c, id, marker_len);
+        new_image = estimate.pose_marker(c_new, frame, c, id, marker_len);
 
         cv::imshow(OPENCV_WINDOW, new_image);
 
-        //c = estimate.c_new;
+        c = c_new;
 
         int k = cv::waitKey(1);
     }

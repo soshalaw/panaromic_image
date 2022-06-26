@@ -7,6 +7,7 @@
 #include <ros/ros.h>
 #include "geometry_msgs/Pose.h"
 #include "tf/transform_broadcaster.h"
+#include "kalman_filter.h"
 
 class arucoMarker
 {
@@ -24,18 +25,22 @@ private:
     double x, y, z, cp_x, cp_y, cp_z, p_x, p_y, p_z, x_tr, y_tr, z_tr, x_pr, y_pr, z_pr, mod, modz_x, modz_y, modx, mody;
     double x_, y_, z_, z_x, z_y, z_z, z_1, y_1, x_1, omega, phi;
 
-    double perimeter;      //perimeter of the marker in pixels
-    double pixels_per_sqr;    // number of pixels in a square of the marker
-    double sqr_numbr = 5;        //number of squares in the marker
-
     cv::Mat camera_matrix;
     cv::Mat distcoefs;
     tf::Matrix3x3 m;
 
+    int nStates = 18;
+    int nInputs = 0;
+    int nMeasurements = 6;
+    double fps = 30;
+    double dt = 1/fps;
+
+    kalman_filter KF = kalman_filter(nStates, nMeasurements, nInputs, dt);   // initialize kalman filter
+
+    cv::Vec3d filtrd_tvec;
+    cv::Mat rot_mat = cv::Mat::zeros(3, 3, CV_64FC1);
 
 public:
-
-    std::array<double,3> c_new;
 
     arucoMarker(cv::Mat Camera_matrix, cv::Mat Distcoefs, double Phi, double Omega)
     {
@@ -46,7 +51,7 @@ public:
         omega = Omega;
     }
 
-    cv::Mat pose_marker(cv::Mat image, std::array<double,3> c, std::vector<int> id, double marker_len)
+    cv::Mat pose_marker(std::array<double,3> &c_new, cv::Mat image, std::array<double,3> c, std::vector<int> id, double marker_len)
     {
         cv::Mat new_image, gray_img;
         image.copyTo(new_image);
@@ -86,10 +91,16 @@ public:
 
                 for (int i = 0; i < ids_to_est.size(); i++ )
                 {
-                    cv::aruco::drawAxis(new_image, camera_matrix, distcoefs, rvecs[i], tvecs[i], 0.1); //0.1 length of the drawn axis
-                    transform_v2cam(rvecs[i], tvecs[i]);
-                    transform_cam2body(rvecs[i]);
+
+                    KF.fillMeasurements(tvecs[i],rvecs[i]);
+                    KF.updateKalmanFilter(filtrd_tvec, rot_mat);
+                    cv::aruco::drawAxis(new_image, camera_matrix, distcoefs, rvecs[i], filtrd_tvec, 0.1); //0.1 length of the drawn axis
+                    transform_v2cam();
+                    transform_cam2body();
                     broadcast();
+                    c_new.at(0) = x_;
+                    c_new.at(1) = y_;
+                    c_new.at(2) = z_;
                 }           
             }
         }
@@ -121,14 +132,13 @@ public:
 
     }
 
-    void transform_v2cam(cv::Vec3d rvecs, cv::Vec3d tvecs)
+    void transform_v2cam()
     {
-
         //transformation from the virtual camera frame to sensor frame
 
-        x_pr = tvecs[0]/tvecs[2];
-        y_pr = tvecs[1]/tvecs[2];
-        z_pr = tvecs[2];
+        x_pr = filtrd_tvec[0]/filtrd_tvec[2];
+        y_pr = filtrd_tvec[1]/filtrd_tvec[2];
+        z_pr = filtrd_tvec[2];
 
         modx = sqrt(cp_y*cp_y + cp_x*cp_x);
         mody = sqrt((cp_x*cp_z)*(cp_x*cp_z) + (cp_y*cp_z)*(cp_y*cp_z) + (cp_y*cp_y + cp_x*cp_x)*(cp_y*cp_y + cp_x*cp_x));
@@ -139,22 +149,20 @@ public:
 
         mod = sqrt(x_tr*x_tr + y_tr*y_tr + z_tr*z_tr);
 
-        x_ = c_new.at(0) = x_tr/mod;
-        y_ = c_new.at(1) = y_tr/mod;
-        z_ = c_new.at(2) = z_tr/mod;
+        x_ = x_tr/mod;
+        y_ = y_tr/mod;
+        z_ = z_tr/mod;
 
         p_x = x_*z_pr;
         p_y = y_*z_pr;
         p_z = z_*z_pr;
-
-        std::cout << x_tr << std::endl;
 
         /*p_x = x_tr;
         p_y = y_tr;
         p_z = z_tr;*/
     }
 
-    void transform_cam2body(cv::Vec3d rvecs)
+    void transform_cam2body()
     {
         //transformation from sensor frame to camera frame
 
@@ -164,7 +172,7 @@ public:
             y = p_y;
             z = p_z;
 
-            get_orientation(cp_x, cp_y, cp_z, rvecs);
+            get_orientation(cp_x, cp_y, cp_z);
         }else
         {
             z_x = sin(phi)*sin(omega);
@@ -182,13 +190,13 @@ public:
             y_1 = z_x*cp_x/modz_x - z_y*z_z*cp_y/modz_y + z_y*cp_z;
             z_1 = (z_y*z_y + z_x*z_x)*cp_y/modz_y + z_z*cp_z;
 
-            get_orientation(x_1, y_1, z_1, rvecs);
+            get_orientation(x_1, y_1, z_1);
         }
     }
 
-    void get_orientation(double x, double y, double z, cv::Vec3d rvec)
+    void get_orientation(double x, double y, double z)
     {
-        cv::Mat rot_mat = cv::Mat::zeros(3, 3, CV_64FC1);
+
         //get the rotation matrix of the virtual camera ref frame
 
         double cam_roll = acos(z/sqrt(y*y + z*z));
@@ -202,7 +210,6 @@ public:
         tf::Matrix3x3 cam_m(q);
 
         //get the rotation matrix of the marker related to the virtual camera frame
-        cv::Rodrigues(rvec, rot_mat);
 
         tf::Matrix3x3 rot_mat_(rot_mat.at<double>(0,0), rot_mat.at<double>(0,1), rot_mat.at<double>(0,2),
                                rot_mat.at<double>(1,0), rot_mat.at<double>(1,1), rot_mat.at<double>(1,2),

@@ -75,8 +75,9 @@ public:
       }
     }
 
-    cv::Mat slice(cv::Mat M, std::array<double,3> &c, double theta_min, double theta_max, double delta_min, double delta_max)
+    cv::Mat slice(cv::Mat M, std::array<double,3> &c, std::array<double,3> c_new, double &fps, double theta_min, double theta_max, double delta_min, double delta_max)
     {
+        double start = cv::getTickCount();
         double alpha = theta_max - theta_min;
 
         double gamma = delta_max - delta_min;
@@ -89,24 +90,34 @@ public:
         ImgPointsx.create(img.size(), CV_32FC1);
         ImgPointsy.create(img.size(), CV_32FC1);
 
-        if (mode == 1)
+        double d = sqrt(c_new.at(0)*c_new.at(0) + c_new.at(1)*c_new.at(1) + c_new.at(2)*c_new.at(2));
+
+        std::cout <<d <<std::endl;
+
+        if(sqrt(c_new.at(0)*c_new.at(0) + c_new.at(1)*c_new.at(1) + c_new.at(2)*c_new.at(2)) == 1)
         {
-            cp_x = c.at(0) = sin(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
-            cp_y = c.at(1) = cos(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
-            cp_z = c.at(2) = cos(delta_min + (gamma)/2);
-        }else
+            cp_x = c_new.at(0);
+            cp_y = c_new.at(1);
+            cp_z = c_new.at(2);
+        }
+        else
         {
-            cp_x = c.at(0) = sin(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
-            cp_y = c.at(1) = cos(delta_min + (gamma)/2);
-            cp_z = c.at(2) = cos(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
+            if (mode == 1)
+            {
+                cp_x = sin(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
+                cp_y = cos(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
+                cp_z = cos(delta_min + (gamma)/2);
+            }else
+            {
+                cp_x = sin(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
+                cp_y = cos(delta_min + (gamma)/2);
+                cp_z = cos(theta_min + (alpha)/2)*sin(delta_min + (gamma)/2);
+            }
         }
 
-        /*if(c.empty())
-        {
-            c.at(0) = cp_x;
-            c.at(1) = cp_y;
-            c.at(2) = cp_z;
-        }*/
+        c.at(0) = cp_x;
+        c.at(1) = cp_y;
+        c.at(2) = cp_z;
 
         modx = sqrt(cp_y*cp_y + cp_x*cp_x);
         mody = sqrt((cp_x*cp_z)*(cp_x*cp_z) + (cp_y*cp_z)*(cp_y*cp_z) + (cp_y*cp_y + cp_x*cp_x)*(cp_y*cp_y + cp_x*cp_x));
@@ -135,6 +146,8 @@ public:
         }
 
         cv::remap(M, img, ImgPointsx, ImgPointsy, 1);
+
+        fps = cv::getTickFrequency()/(cv::getTickCount()-start);
 
         return img;
     }
@@ -179,7 +192,7 @@ public:
         return img;
     }
 
-    void def_camera_matrix(cv::Mat camera_matrix, cv::Mat distcoefs, double theta_min, double theta_max, double delta_min, double delta_max)
+    void def_camera_matrix(cv::Mat &camera_matrix, cv::Mat &distcoefs, double theta_min, double theta_max, double delta_min, double delta_max)
     {
         double alpha = theta_max - theta_min;
         double gamma = delta_max - delta_min;

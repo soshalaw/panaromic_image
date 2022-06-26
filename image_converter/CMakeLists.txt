@@ -125,6 +125,7 @@ include_directories(
 # include
   ${catkin_INCLUDE_DIRS}
   opencv
+  include
 )
 
 ## Declare a C++ library
@@ -140,7 +141,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
- add_executable(panaromic_image_node src/panaromic_image_node.cpp src/ocam_functions.h src/image_converter.h src/pose_estimate.h)
+ add_executable(panaromic_image_node src/panaromic_image_node.cpp include/ocam_functions.h include/image_converter.h src/ocam_functions.cpp src/image_converter.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
