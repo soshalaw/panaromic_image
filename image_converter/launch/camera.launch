@@ -1,4 +1,7 @@
 <launch>
+
+    <rosparam file="$(find image_converter)/config/camera.yaml"/>
+
 	<node name="usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen">
 		<param name="video_device" value="/dev/video2" />
 		<param name="image_width" value="3264" />
