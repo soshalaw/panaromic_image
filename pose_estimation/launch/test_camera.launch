@@ -1,7 +1,7 @@
 
 <launch>
 	<node name="usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen">
-		<param name="video_device" value="/dev/video0" />
+		<param name="video_device" value="/dev/video2" />
 		<param name="image_width" value="3264" />
 		<param name="image_height" value="2448" />
 		<param name="pixel_format" value="mjpeg" />

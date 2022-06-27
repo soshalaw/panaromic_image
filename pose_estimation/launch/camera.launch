@@ -1,5 +1,7 @@
 <launch>
 
+    <rosparam file="$(find pose_estimation)/config/camera.yaml"/>
+
 	<node name="pose_estimation" pkg="pose_estimation" type="pose_estimation_node" output="screen">
 	</node>
 	
