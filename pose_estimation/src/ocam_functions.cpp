@@ -3,7 +3,6 @@
 
 ocam_functions::ocam_functions()
 {
-
     ros::param::get("invpol", invpol);
     ros::param::get("mapcoef", pol);
     ros::param::get("yc", yc);

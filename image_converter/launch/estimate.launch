@@ -1,0 +1,16 @@
+<launch>
+
+	<rosparam file="$(find image_converter)/config/camera.yaml"/>
+	
+	<rosparam file="$(find image_converter)/config/image_params.yaml"/>
+
+        <include file= "$(find image_converter)/launch/camera.launch">
+		<arg name="usb_cam" value="usb_cam"/>
+                <arg name="video_device" value="/dev/video2"/>
+                <arg name="image_width" value="1280"/>
+                <arg name="image_height" value="720"/>
+	</include>
+		
+	<node name="image_converter" pkg="image_converter" type="panaromic_image_node" output="screen"/>
+
+</launch>

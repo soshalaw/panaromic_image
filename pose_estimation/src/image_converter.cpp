@@ -4,7 +4,7 @@
 image_converter::image_converter()
 : it_(nh_)
 {
-    image_sub = it_.subscribe("usb_cam/image_raw", 1 , &image_converter::imageCb, this);
+    image_sub = it_.subscribe("usb_cam/image", 1 , &image_converter::imageCb, this);
     cv::namedWindow(OPENCV_WINDOW);
 
     theta_min =  -CV_PI/6;
@@ -20,8 +20,6 @@ image_converter::image_converter()
     distcoefs = cv::Mat::zeros(5, 1, CV_64FC1);
 
     id = {0};
-
-
 
 }
 

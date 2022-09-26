@@ -18,14 +18,6 @@ private:
     double points2D[2];
     double cp_x, cp_y, cp_z, modx, mody;
 
-    std::vector<double> invpol;
-    std::vector<double> pol;
-    double yc;
-    double xc;
-
-    double c;
-    double d;
-    double e;
 
     int H_res; // length of the output image
 
@@ -39,9 +31,9 @@ public:
 
     ocam_functions();
 
-    void world2cam(double point2D[2], double point3D[3]);
+    void world2cam(double point2D[2], double point3D[3], double xc, double yc, double c, double d, double e, std::vector<double> invpol);
 
-    cv::Mat slice(cv::Mat M, std::array<double,3> &c, double theta_min, double theta_max, double delta_min, double delta_max);
+    cv::Mat slice(cv::Mat M, std::array<double,3> &c, double theta_min, double theta_max, double alpha_min, double alpha_max, double xc, double yc, double c_, double d, double e, std::vector<double> invpol);
 
-    cv::Mat panaroma(cv::Mat M);
+    cv::Mat panaroma(cv::Mat M, double delta_min, double delta_max, double xc, double yc, double c_, double d, double e, std::vector<double> invpol);
 };

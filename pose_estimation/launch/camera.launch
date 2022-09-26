@@ -2,8 +2,14 @@
 
     <rosparam file="$(find pose_estimation)/config/camera.yaml"/>
 
-	<node name="pose_estimation" pkg="pose_estimation" type="pose_estimation_node" output="screen">
-	</node>
-	
-	<include file="$(find pose_estimation)/launch/test_camera.launch" />
+        <node name="pose_estimation" pkg="pose_estimation" type="pose_estimation_node" output="screen">
+        </node>
+
+        <include file= "$(find pose_estimation)/launch/test_camera.launch">
+                <arg name="usb_cam" value="usb_cam"/>
+                <arg name="video_device" value="/dev/video2"/>
+                <arg name="image_width" value="3264"/>
+                <arg name="image_height" value="2448"/>
+        </include>
+
 </launch>

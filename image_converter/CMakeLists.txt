@@ -14,7 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   sensor_msgs
   std_msgs
-  usb_cam
+  usb_cam_hardware
 )
 
 find_package(OpenCV REQUIRED)

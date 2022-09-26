@@ -1,0 +1,11 @@
+#panoramic image mode
+delta_min : 30
+delta_max : 30
+
+#projected image mode
+theta_min : -45
+theta_max : 45
+
+alpha_min : 45
+alpha_max : 135
+

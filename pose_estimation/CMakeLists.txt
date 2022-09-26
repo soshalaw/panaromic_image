@@ -16,7 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   sensor_msgs
   std_msgs
-  usb_cam
+  usb_cam_hardware
   tf
 )
 

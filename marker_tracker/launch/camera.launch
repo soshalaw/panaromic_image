@@ -1,7 +1,0 @@
-<launch>
-
-	<node name="marker_tracker" pkg="marker_tracker" type="marker_tracker_node" output="screen">
-	</node>
-	
-	<include file="$(find pose_estimation)/launch/test_camera.launch" />
-</launch>

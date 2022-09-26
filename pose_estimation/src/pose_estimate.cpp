@@ -24,9 +24,9 @@ cv::Mat pose_estimate::pose_marker(cv::Mat image, std::array<double, 3> c, std::
     std::vector<std::vector<cv::Point2f>> corners, corners_to_est;
     std::vector<cv::Vec3d> rvecs, tvecs;
 
-    cp_x = c[0];
-    cp_y = c[1];
-    cp_z = c[2];
+    cp_x = c.at(0);
+    cp_y = c.at(1);
+    cp_z = c.at(2);
 
     int k = 0; //counter for the array of markers to estimate the pose
 
@@ -95,10 +95,6 @@ void pose_estimate::broadcast(cv::Vec3d rvecs, cv::Vec3d tvecs)
     p_y = y_*z_pr;
     p_z = z_*z_pr;
 
-    /*p_x = x_tr;
-    p_y = y_tr;
-    p_z = z_tr;*/
-
     //transformation from sensor frame to camera frame
 
     if (omega == 0 & phi == 0)
@@ -127,7 +123,6 @@ void pose_estimate::broadcast(cv::Vec3d rvecs, cv::Vec3d tvecs)
 
         get_orientation(x_1, y_1, z_1, rvecs);
     }
-
 
     transform.setOrigin(tf::Vector3(x, y, z));
     m.getRotation(q);
